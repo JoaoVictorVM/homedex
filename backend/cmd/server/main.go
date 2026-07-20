@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
 	"github.com/JoaoVictorVM/homedex/backend/internal/database"
 	"github.com/JoaoVictorVM/homedex/backend/internal/server"
 )
@@ -53,11 +54,15 @@ func run() error {
 		return fmt.Errorf("executar migrations: %w", err)
 	}
 
+	collections := collection.NewHandler(
+		collection.NewService(collection.NewRepository(pool)),
+	)
+
 	srv := server.New(server.Config{
 		Port:           port,
 		FrontendOrigin: frontendOrigin,
 		TrustProxy:     trustProxy,
-	}, pool)
+	}, pool, server.Handlers{Collections: collections})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

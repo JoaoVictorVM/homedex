@@ -9,6 +9,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+
+	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
 )
 
 const (
@@ -26,7 +28,11 @@ type Pinger interface {
 	Ping(ctx context.Context) error
 }
 
-func New(cfg Config, db Pinger) *http.Server {
+type Handlers struct {
+	Collections *collection.Handler
+}
+
+func New(cfg Config, db Pinger, handlers Handlers) *http.Server {
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -46,6 +52,7 @@ func New(cfg Config, db Pinger) *http.Server {
 	))
 
 	router.Get("/health", handleHealth(db))
+	router.Route("/collections", handlers.Collections.Register)
 
 	return &http.Server{
 		Addr:              ":" + cfg.Port,

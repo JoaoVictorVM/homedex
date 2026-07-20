@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/go-chi/httprate"
+
+	"github.com/JoaoVictorVM/homedex/backend/internal/httpjson"
 )
 
 func handleRateLimited(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusTooManyRequests, map[string]string{
-		"error": "muitas requisições, tente novamente em instantes",
-	})
+	httpjson.Error(w, http.StatusTooManyRequests, "muitas requisições, tente novamente em instantes")
 }
 
 func rateLimitKey(trustProxy bool) httprate.KeyFunc {
