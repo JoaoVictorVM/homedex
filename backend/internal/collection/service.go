@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/JoaoVictorVM/homedex/backend/internal/games"
 )
 
 const maxCodeAttempts = 5
@@ -23,7 +25,7 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 			return Collection{}, err
 		}
 
-		created, err := s.repo.Insert(ctx, code)
+		created, err := s.repo.Insert(ctx, code, games.OfficialNames())
 		if err == nil {
 			return created, nil
 		}

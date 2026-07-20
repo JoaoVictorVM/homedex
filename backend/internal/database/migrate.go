@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"embed"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path"
@@ -44,7 +43,7 @@ func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 func apply(ctx context.Context, pool *pgxpool.Pool, name string) error {
 	version := path.Base(name)
 
-	return inTx(ctx, pool, func(tx pgx.Tx) error {
+	return InTx(ctx, pool, func(tx pgx.Tx) error {
 		var exists bool
 		if err := tx.QueryRow(ctx,
 			`SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`,
@@ -74,24 +73,4 @@ func apply(ctx context.Context, pool *pgxpool.Pool, name string) error {
 
 		return nil
 	})
-}
-
-func inTx(ctx context.Context, pool *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("iniciar transação: %w", err)
-	}
-
-	if err := fn(tx); err != nil {
-		if rbErr := tx.Rollback(ctx); rbErr != nil {
-			return errors.Join(err, fmt.Errorf("desfazer transação: %w", rbErr))
-		}
-		return err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("confirmar transação: %w", err)
-	}
-
-	return nil
 }
