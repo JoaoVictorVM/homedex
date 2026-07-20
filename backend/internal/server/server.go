@@ -8,11 +8,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
+)
+
+const (
+	rateLimitRequests = 100
+	rateLimitWindow   = time.Minute
 )
 
 type Config struct {
 	Port           string
 	FrontendOrigin string
+	TrustProxy     bool
 }
 
 type Pinger interface {
@@ -31,6 +38,12 @@ func New(cfg Config, db Pinger) *http.Server {
 		AllowedHeaders: []string{"Accept", "Content-Type"},
 		MaxAge:         300,
 	}))
+	router.Use(httprate.LimitBy(
+		rateLimitRequests,
+		rateLimitWindow,
+		rateLimitKey(cfg.TrustProxy),
+		httprate.WithLimitHandler(handleRateLimited),
+	))
 
 	router.Get("/health", handleHealth(db))
 

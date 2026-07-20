@@ -38,6 +38,8 @@ func run() error {
 		frontendOrigin = "http://localhost:5173"
 	}
 
+	trustProxy := os.Getenv("TRUST_PROXY") == "true"
+
 	bootCtx, cancelBoot := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelBoot()
 
@@ -51,7 +53,11 @@ func run() error {
 		return fmt.Errorf("executar migrations: %w", err)
 	}
 
-	srv := server.New(server.Config{Port: port, FrontendOrigin: frontendOrigin}, pool)
+	srv := server.New(server.Config{
+		Port:           port,
+		FrontendOrigin: frontendOrigin,
+		TrustProxy:     trustProxy,
+	}, pool)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
