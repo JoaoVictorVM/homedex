@@ -38,3 +38,7 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 		"gerar código único após %d tentativas: %w", maxCodeAttempts, errCodeTaken,
 	)
 }
+
+func (s *Service) Get(ctx context.Context, code string) (Collection, error) {
+	return s.repo.FindByCode(ctx, code)
+}

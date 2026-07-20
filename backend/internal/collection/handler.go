@@ -19,6 +19,20 @@ func NewHandler(service *Service) *Handler {
 
 func (h *Handler) Register(r chi.Router) {
 	r.Post("/", h.create)
+	r.Get("/{code}", h.get)
+}
+
+func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
+	code := chi.URLParam(r, "code")
+
+	found, err := h.service.Get(r.Context(), code)
+	if err != nil {
+		slog.Error("buscar coleção", "erro", err)
+		httpjson.Error(w, http.StatusInternalServerError, "não foi possível buscar a coleção")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, found)
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {

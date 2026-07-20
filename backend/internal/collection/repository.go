@@ -60,3 +60,19 @@ func (r *Repository) Insert(ctx context.Context, code string, officialGames []st
 
 	return created, nil
 }
+
+func (r *Repository) FindByCode(ctx context.Context, code string) (Collection, error) {
+	var found Collection
+
+	err := r.pool.QueryRow(ctx,
+		`SELECT id, code, box_count, created_at
+		 FROM collections
+		 WHERE code = $1`,
+		code,
+	).Scan(&found.ID, &found.Code, &found.BoxCount, &found.CreatedAt)
+	if err != nil {
+		return Collection{}, fmt.Errorf("buscar coleção por código: %w", err)
+	}
+
+	return found, nil
+}
