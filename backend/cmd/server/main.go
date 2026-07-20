@@ -32,7 +32,11 @@ func run() error {
 	}
 	defer pool.Close()
 
-	fmt.Println("conexão com o Postgres estabelecida")
+	if err := database.Migrate(ctx, pool); err != nil {
+		return fmt.Errorf("executar migrations: %w", err)
+	}
+
+	fmt.Println("conexão com o Postgres estabelecida e migrations aplicadas")
 
 	return nil
 }
