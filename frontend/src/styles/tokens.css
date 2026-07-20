@@ -60,4 +60,64 @@
 
   --color-success: var(--color-green-500);
   --color-danger: var(--color-red-500);
+
+  --font-family-base: 'Press Start 2P', 'Courier New', monospace;
+
+  --font-size-2xs: 0.5rem;
+  --font-size-xs: 0.625rem;
+  --font-size-sm: 0.75rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+
+  --font-weight-regular: 400;
+
+  --line-height-tight: 1.25;
+  --line-height-base: 1.6;
+
+  --letter-spacing-base: 0;
+  --letter-spacing-wide: 0.08em;
+
+  --text-shadow-base: 0.125em 0.125em 0 var(--color-text-shadow);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  --gap-xs: var(--space-1);
+  --gap-sm: var(--space-2);
+  --gap-md: var(--space-4);
+  --gap-lg: var(--space-5);
+
+  --box-columns: 6;
+  --box-rows: 5;
+
+  --size-slot: 4rem;
+  --size-sprite-slot: 3rem;
+  --size-sprite-detail: 6rem;
+  --size-panel-detail: 16rem;
+  --size-modal-sm: 20rem;
+  --size-modal-md: 28rem;
+  --size-control: 2.5rem;
+  --size-icon: 1.5rem;
+  --size-screen-max: 60rem;
+
+  --border-width-sm: 0.125rem;
+  --border-width-md: 0.25rem;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-round: 999px;
+
+  --shadow-hard: 0.25rem 0.25rem 0 var(--color-gray-700);
+
+  --z-overlay: 100;
+  --z-modal: 110;
+  --z-drag: 200;
 }
