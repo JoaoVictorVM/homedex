@@ -33,6 +33,11 @@ func run() error {
 		port = "8080"
 	}
 
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		frontendOrigin = "http://localhost:5173"
+	}
+
 	bootCtx, cancelBoot := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelBoot()
 
@@ -46,7 +51,7 @@ func run() error {
 		return fmt.Errorf("executar migrations: %w", err)
 	}
 
-	srv := server.New(server.Config{Port: port}, pool)
+	srv := server.New(server.Config{Port: port, FrontendOrigin: frontendOrigin}, pool)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

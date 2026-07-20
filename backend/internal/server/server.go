@@ -7,10 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 type Config struct {
-	Port string
+	Port           string
+	FrontendOrigin string
 }
 
 type Pinger interface {
@@ -23,6 +25,12 @@ func New(cfg Config, db Pinger) *http.Server {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{cfg.FrontendOrigin},
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Content-Type"},
+		MaxAge:         300,
+	}))
 
 	router.Get("/health", handleHealth(db))
 
