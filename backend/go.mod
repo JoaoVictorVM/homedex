@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/cors v1.2.2
 	github.com/go-chi/httprate v0.16.0
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/matoous/go-nanoid/v2 v2.1.0
 )
 
 require (
