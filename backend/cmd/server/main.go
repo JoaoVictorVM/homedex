@@ -5,10 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/JoaoVictorVM/homedex/backend/internal/database"
+	"github.com/JoaoVictorVM/homedex/backend/internal/server"
 )
 
 func main() {
@@ -23,20 +28,49 @@ func run() error {
 		return errors.New("variável de ambiente DATABASE_URL não definida")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	pool, err := database.Connect(ctx, databaseURL)
+	bootCtx, cancelBoot := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelBoot()
+
+	pool, err := database.Connect(bootCtx, databaseURL)
 	if err != nil {
 		return fmt.Errorf("conectar ao Postgres: %w", err)
 	}
 	defer pool.Close()
 
-	if err := database.Migrate(ctx, pool); err != nil {
+	if err := database.Migrate(bootCtx, pool); err != nil {
 		return fmt.Errorf("executar migrations: %w", err)
 	}
 
-	fmt.Println("conexão com o Postgres estabelecida e migrations aplicadas")
+	srv := server.New(server.Config{Port: port}, pool)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	serveErr := make(chan error, 1)
+	go func() {
+		serveErr <- srv.ListenAndServe()
+	}()
+
+	slog.Info("servidor iniciado", "porta", port)
+
+	select {
+	case err := <-serveErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("servidor http: %w", err)
+		}
+	case <-ctx.Done():
+		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancelShutdown()
+
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("encerrar servidor: %w", err)
+		}
+	}
 
 	return nil
 }
