@@ -1,0 +1,63 @@
+:root {
+  --color-white: #f8f8f8;
+  --color-black: #181818;
+
+  --color-red-300: #f88058;
+  --color-red-500: #e04028;
+  --color-red-700: #a82820;
+
+  --color-orange-300: #f8b050;
+  --color-orange-500: #e88820;
+  --color-orange-700: #b05810;
+
+  --color-yellow-300: #f8e080;
+  --color-yellow-500: #f8d030;
+  --color-yellow-700: #c8a018;
+
+  --color-green-300: #78c850;
+  --color-green-500: #48a048;
+  --color-green-700: #206028;
+
+  --color-teal-300: #58b0a8;
+  --color-teal-500: #308880;
+  --color-teal-700: #185850;
+
+  --color-blue-300: #78b8e8;
+  --color-blue-500: #3878b8;
+  --color-blue-700: #204878;
+
+  --color-pink-300: #f8a0b8;
+  --color-pink-500: #e86888;
+  --color-pink-700: #b83858;
+
+  --color-gray-100: #e8e8e8;
+  --color-gray-300: #b8b8b8;
+  --color-gray-500: #787878;
+  --color-gray-700: #484848;
+  --color-gray-900: #282828;
+
+  --color-bg-app: var(--color-teal-700);
+  --color-bg-box: var(--color-green-500);
+  --color-bg-slot: var(--color-green-300);
+  --color-bg-panel: var(--color-white);
+  --color-bg-header: var(--color-orange-300);
+
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-500);
+  --color-text-inverse: var(--color-white);
+  --color-text-shadow: var(--color-gray-300);
+
+  --color-border: var(--color-gray-900);
+  --color-border-soft: var(--color-gray-300);
+
+  --color-accent: var(--color-red-500);
+  --color-accent-strong: var(--color-red-700);
+  --color-selection: var(--color-yellow-500);
+
+  --color-male: var(--color-blue-500);
+  --color-female: var(--color-pink-500);
+  --color-shiny: var(--color-yellow-500);
+
+  --color-success: var(--color-green-500);
+  --color-danger: var(--color-red-500);
+}
