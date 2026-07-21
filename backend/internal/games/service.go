@@ -27,3 +27,17 @@ func (s *Service) List(ctx context.Context, rawCode string) ([]Game, error) {
 
 	return s.repo.ListByCollection(ctx, owner.ID)
 }
+
+func (s *Service) Create(ctx context.Context, rawCode string, rawName string) (Game, error) {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return Game{}, err
+	}
+
+	name, err := ParseName(rawName)
+	if err != nil {
+		return Game{}, err
+	}
+
+	return s.repo.Insert(ctx, owner.ID, name)
+}

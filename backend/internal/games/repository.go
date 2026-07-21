@@ -2,10 +2,14 @@ package games
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const uniqueViolationCode = "23505"
 
 type Repository struct {
 	pool *pgxpool.Pool
@@ -42,4 +46,24 @@ func (r *Repository) ListByCollection(ctx context.Context, collectionID int64) (
 	}
 
 	return found, nil
+}
+
+func (r *Repository) Insert(ctx context.Context, collectionID int64, name string) (Game, error) {
+	var created Game
+
+	err := r.pool.QueryRow(ctx,
+		`INSERT INTO games (collection_id, name, is_official)
+		 VALUES ($1, $2, false)
+		 RETURNING id, name, is_official, visible`,
+		collectionID, name,
+	).Scan(&created.ID, &created.Name, &created.IsOfficial, &created.Visible)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode {
+			return Game{}, ErrNameTaken
+		}
+		return Game{}, fmt.Errorf("inserir jogo: %w", err)
+	}
+
+	return created, nil
 }
