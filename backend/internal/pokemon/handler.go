@@ -3,6 +3,7 @@ package pokemon
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -13,6 +14,8 @@ import (
 	"github.com/JoaoVictorVM/homedex/backend/internal/httpjson"
 	"github.com/JoaoVictorVM/homedex/backend/internal/pokeapi"
 )
+
+const maxBodySize = 8 << 10
 
 type Handler struct {
 	service *Service
@@ -34,7 +37,18 @@ type createRequest struct {
 }
 
 func (b createRequest) toNewPokemon() NewPokemon {
-	return NewPokemon(b)
+	return NewPokemon{
+		EditPokemon: EditPokemon{
+			PokemonName: b.PokemonName,
+			Nickname:    b.Nickname,
+			IsShiny:     b.IsShiny,
+			Gender:      b.Gender,
+			Form:        b.Form,
+			GameID:      b.GameID,
+		},
+		BoxNumber: b.BoxNumber,
+		Slot:      b.Slot,
+	}
 }
 
 type editRequest struct {
@@ -71,7 +85,7 @@ func (h *Handler) move(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body positionRequest
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := decodeBody(w, r, &body); err != nil {
 		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
 		return
 	}
@@ -114,7 +128,7 @@ func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body editRequest
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := decodeBody(w, r, &body); err != nil {
 		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
 		return
 	}
@@ -152,7 +166,7 @@ func (h *Handler) listByBox(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	var body createRequest
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := decodeBody(w, r, &body); err != nil {
 		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
 		return
 	}
@@ -164,6 +178,17 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpjson.Write(w, http.StatusCreated, created)
+}
+
+func decodeBody(w http.ResponseWriter, r *http.Request, dst any) error {
+	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodySize))
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(dst); err != nil {
+		return fmt.Errorf("decodificar corpo da requisição: %w", err)
+	}
+
+	return nil
 }
 
 func writeError(w http.ResponseWriter, err error, action string) {
@@ -178,6 +203,16 @@ func writeError(w http.ResponseWriter, err error, action string) {
 	case errors.Is(err, ErrInvalidGender):
 		httpjson.Error(w, http.StatusBadRequest,
 			"sexo deve ser male, female ou genderless")
+	case errors.Is(err, ErrInvalidName):
+		httpjson.Error(w, http.StatusBadRequest, "informe o nome do pokémon")
+	case errors.Is(err, ErrInvalidNickname):
+		httpjson.Error(w, http.StatusBadRequest,
+			"apelido deve ter no máximo 30 caracteres")
+	case errors.Is(err, ErrInvalidForm):
+		httpjson.Error(w, http.StatusBadRequest,
+			"forma deve ter no máximo 60 caracteres")
+	case errors.Is(err, ErrInvalidGame):
+		httpjson.Error(w, http.StatusBadRequest, "informe o jogo do pokémon")
 	case errors.Is(err, ErrInvalidPosition):
 		httpjson.Error(w, http.StatusBadRequest,
 			"box ou slot fora dos limites da coleção")

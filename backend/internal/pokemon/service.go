@@ -38,9 +38,11 @@ func (s *Service) Create(ctx context.Context, rawCode string, novo NewPokemon) (
 		return Pokemon{}, err
 	}
 
-	if !validGender(novo.Gender) {
-		return Pokemon{}, ErrInvalidGender
+	novo.EditPokemon, err = novo.normalized()
+	if err != nil {
+		return Pokemon{}, err
 	}
+
 	if novo.BoxNumber < 1 || novo.BoxNumber > owner.BoxCount {
 		return Pokemon{}, ErrInvalidPosition
 	}
@@ -70,8 +72,9 @@ func (s *Service) Update(ctx context.Context, rawCode string, pokemonID int64, e
 		return Pokemon{}, err
 	}
 
-	if !validGender(edit.Gender) {
-		return Pokemon{}, ErrInvalidGender
+	edit, err = edit.normalized()
+	if err != nil {
+		return Pokemon{}, err
 	}
 
 	species, err := s.pokedex.Pokemon(ctx, edit.PokemonName)

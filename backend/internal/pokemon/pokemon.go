@@ -1,6 +1,10 @@
 package pokemon
 
-import "errors"
+import (
+	"errors"
+	"strings"
+	"unicode/utf8"
+)
 
 const (
 	GenderMale       = "male"
@@ -9,11 +13,18 @@ const (
 
 	SlotsPerBox = 30
 	MaxBoxes    = 32
+
+	maxNicknameLength = 30
+	maxFormLength     = 60
 )
 
 var (
 	ErrInvalidGender   = errors.New("sexo inválido")
 	ErrInvalidPosition = errors.New("posição inválida")
+	ErrInvalidName     = errors.New("nome do pokémon é obrigatório")
+	ErrInvalidNickname = errors.New("apelido inválido")
+	ErrInvalidForm     = errors.New("forma inválida")
+	ErrInvalidGame     = errors.New("jogo é obrigatório")
 	ErrSlotTaken       = errors.New("slot já ocupado")
 	ErrGameNotFound    = errors.New("jogo não encontrado na coleção")
 	ErrNotFound        = errors.New("pokémon não encontrado na coleção")
@@ -32,17 +43,6 @@ type Pokemon struct {
 	Sprite      string `json:"sprite"`
 }
 
-type NewPokemon struct {
-	PokemonName string
-	Nickname    string
-	IsShiny     bool
-	Gender      string
-	Form        string
-	GameID      int64
-	BoxNumber   int
-	Slot        int
-}
-
 type EditPokemon struct {
 	PokemonName string
 	Nickname    string
@@ -50,6 +50,43 @@ type EditPokemon struct {
 	Gender      string
 	Form        string
 	GameID      int64
+}
+
+type NewPokemon struct {
+	EditPokemon
+	BoxNumber int
+	Slot      int
+}
+
+func (e EditPokemon) normalized() (EditPokemon, error) {
+	e.PokemonName = collapseSpaces(e.PokemonName)
+	if e.PokemonName == "" {
+		return EditPokemon{}, ErrInvalidName
+	}
+
+	e.Nickname = collapseSpaces(e.Nickname)
+	if utf8.RuneCountInString(e.Nickname) > maxNicknameLength {
+		return EditPokemon{}, ErrInvalidNickname
+	}
+
+	e.Form = collapseSpaces(e.Form)
+	if utf8.RuneCountInString(e.Form) > maxFormLength {
+		return EditPokemon{}, ErrInvalidForm
+	}
+
+	if !validGender(e.Gender) {
+		return EditPokemon{}, ErrInvalidGender
+	}
+
+	if e.GameID <= 0 {
+		return EditPokemon{}, ErrInvalidGame
+	}
+
+	return e, nil
+}
+
+func collapseSpaces(raw string) string {
+	return strings.Join(strings.Fields(raw), " ")
 }
 
 func validGender(gender string) bool {
