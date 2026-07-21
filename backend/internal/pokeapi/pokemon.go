@@ -39,6 +39,10 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 		return Pokemon{}, err
 	}
 
+	if cached, ok := c.pokemons.get(name); ok {
+		return cached, nil
+	}
+
 	var resp pokemonResponse
 	err = c.Get(ctx, "pokemon/"+name, &resp)
 	if errors.Is(err, ErrNotFound) {
@@ -57,7 +61,7 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 		forms = append(forms, form.Name)
 	}
 
-	return Pokemon{
+	found := Pokemon{
 		ID:   resp.ID,
 		Name: resp.Name,
 		Sprites: Sprites{
@@ -65,10 +69,18 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 			Shiny:   resp.Sprites.FrontShiny,
 		},
 		Forms: forms,
-	}, nil
+	}
+
+	c.pokemons.set(name, found)
+
+	return found, nil
 }
 
 func (c *Client) defaultVariety(ctx context.Context, name string) (string, error) {
+	if cached, ok := c.varieties.get(name); ok {
+		return cached, nil
+	}
+
 	var resp struct {
 		Varieties []struct {
 			IsDefault bool `json:"is_default"`
@@ -84,6 +96,7 @@ func (c *Client) defaultVariety(ctx context.Context, name string) (string, error
 
 	for _, variety := range resp.Varieties {
 		if variety.IsDefault {
+			c.varieties.set(name, variety.Pokemon.Name)
 			return variety.Pokemon.Name, nil
 		}
 	}

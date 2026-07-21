@@ -22,13 +22,16 @@ const (
 var ErrNotFound = errors.New("recurso não encontrado na PokéAPI")
 
 type Options struct {
-	BaseURL string
-	HTTP    *http.Client
+	BaseURL   string
+	HTTP      *http.Client
+	CacheSize int
 }
 
 type Client struct {
-	baseURL string
-	http    *http.Client
+	baseURL   string
+	http      *http.Client
+	pokemons  *cache[Pokemon]
+	varieties *cache[string]
 }
 
 func New(opts Options) *Client {
@@ -42,9 +45,16 @@ func New(opts Options) *Client {
 		httpClient = &http.Client{Timeout: defaultTimeout}
 	}
 
+	cacheSize := opts.CacheSize
+	if cacheSize <= 0 {
+		cacheSize = defaultCacheSize
+	}
+
 	return &Client{
-		baseURL: strings.TrimSuffix(baseURL, "/"),
-		http:    httpClient,
+		baseURL:   strings.TrimSuffix(baseURL, "/"),
+		http:      httpClient,
+		pokemons:  newCache[Pokemon](cacheSize),
+		varieties: newCache[string](cacheSize),
 	}
 }
 
