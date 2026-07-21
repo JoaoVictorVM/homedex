@@ -55,3 +55,12 @@ func (s *Service) Rename(ctx context.Context, rawCode string, gameID int64, rawN
 
 	return s.repo.UpdateName(ctx, owner.ID, gameID, name)
 }
+
+func (s *Service) Delete(ctx context.Context, rawCode string, gameID int64) error {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.Delete(ctx, owner.ID, gameID)
+}

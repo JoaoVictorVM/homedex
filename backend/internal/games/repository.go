@@ -10,7 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const uniqueViolationCode = "23505"
+const (
+	uniqueViolationCode     = "23505"
+	restrictViolationCode   = "23001"
+	foreignKeyViolationCode = "23503"
+)
 
 type Repository struct {
 	pool *pgxpool.Pool
@@ -90,4 +94,25 @@ func (r *Repository) UpdateName(ctx context.Context, collectionID int64, gameID 
 	}
 
 	return updated, nil
+}
+
+func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int64) error {
+	tag, err := r.pool.Exec(ctx,
+		`DELETE FROM games WHERE id = $2 AND collection_id = $1`,
+		collectionID, gameID,
+	)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) &&
+			(pgErr.Code == restrictViolationCode || pgErr.Code == foreignKeyViolationCode) {
+			return ErrInUse
+		}
+		return fmt.Errorf("excluir jogo: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }

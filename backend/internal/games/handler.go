@@ -29,6 +29,22 @@ func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.list)
 	r.Post("/", h.create)
 	r.Patch("/{gameID}", h.rename)
+	r.Delete("/{gameID}", h.delete)
+}
+
+func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
+	gameID, err := strconv.ParseInt(chi.URLParam(r, "gameID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de jogo inválido")
+		return
+	}
+
+	if err := h.service.Delete(r.Context(), chi.URLParam(r, "code"), gameID); err != nil {
+		writeError(w, err, "excluir jogo")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) rename(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +112,9 @@ func writeError(w http.ResponseWriter, err error, action string) {
 			"já existe um jogo com esse nome nesta coleção")
 	case errors.Is(err, ErrNotFound):
 		httpjson.Error(w, http.StatusNotFound, "jogo não encontrado nesta coleção")
+	case errors.Is(err, ErrInUse):
+		httpjson.Error(w, http.StatusConflict,
+			"não é possível excluir: existem Pokémon vinculados a este jogo")
 	default:
 		slog.Error(action, "erro", err)
 		httpjson.Error(w, http.StatusInternalServerError, "não foi possível "+action)

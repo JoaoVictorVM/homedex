@@ -12,6 +12,7 @@ var (
 	ErrInvalidName = errors.New("nome de jogo inválido")
 	ErrNameTaken   = errors.New("já existe um jogo com esse nome na coleção")
 	ErrNotFound    = errors.New("jogo não encontrado")
+	ErrInUse       = errors.New("jogo possui Pokémon vinculados")
 )
 
 func ParseName(raw string) (string, error) {
