@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -27,6 +28,10 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 
 	found, err := h.service.Get(r.Context(), code)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			httpjson.Error(w, http.StatusNotFound, "código de coleção não encontrado")
+			return
+		}
 		slog.Error("buscar coleção", "erro", err)
 		httpjson.Error(w, http.StatusInternalServerError, "não foi possível buscar a coleção")
 		return

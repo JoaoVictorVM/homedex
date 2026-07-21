@@ -14,7 +14,11 @@ import (
 
 const uniqueViolationCode = "23505"
 
-var errCodeTaken = errors.New("código de coleção já existe")
+var (
+	errCodeTaken = errors.New("código de coleção já existe")
+
+	ErrNotFound = errors.New("coleção não encontrada")
+)
 
 type Repository struct {
 	pool *pgxpool.Pool
@@ -71,6 +75,9 @@ func (r *Repository) FindByCode(ctx context.Context, code string) (Collection, e
 		code,
 	).Scan(&found.ID, &found.Code, &found.BoxCount, &found.CreatedAt)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Collection{}, ErrNotFound
+		}
 		return Collection{}, fmt.Errorf("buscar coleção por código: %w", err)
 	}
 
