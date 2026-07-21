@@ -11,5 +11,6 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'entry.codeLabel': 'Collection code',
   'entry.codeHint': 'It has 8 characters. Do not use 0, O, 1 or I.',
   'entry.confirm': 'Enter',
+  'common.loading': 'Loading...',
   'entry.back': 'Back',
 }

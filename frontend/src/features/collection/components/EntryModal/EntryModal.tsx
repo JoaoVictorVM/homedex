@@ -8,11 +8,13 @@ import styles from './EntryModal.module.css'
 
 type EntryModalProps = {
   onSubmitCode: (code: string) => void
-  onCreate: () => void
+  isLoading?: boolean
+  onCreate?: () => void
 }
 
 export function EntryModal({
   onSubmitCode,
+  isLoading = false,
   onCreate,
 }: EntryModalProps): JSX.Element {
   const { t } = useI18n()
@@ -31,9 +33,11 @@ export function EntryModal({
             <p className={styles.question}>{t('entry.question')}</p>
             <div className={styles.actions}>
               <Button onClick={entry.goToCodeStep}>{t('entry.hasCode')}</Button>
-              <Button variant="secondary" onClick={onCreate}>
-                {t('entry.createNew')}
-              </Button>
+              {onCreate !== undefined && (
+                <Button variant="secondary" onClick={onCreate}>
+                  {t('entry.createNew')}
+                </Button>
+              )}
             </div>
           </>
         ) : (
@@ -51,14 +55,19 @@ export function EntryModal({
                 autoComplete="off"
                 spellCheck={false}
                 aria-label={t('entry.codeLabel')}
+                disabled={isLoading}
               />
             </label>
             <p className={styles.hint}>{t('entry.codeHint')}</p>
             <div className={styles.actions}>
-              <Button type="submit" disabled={!entry.canSubmit}>
-                {t('entry.confirm')}
+              <Button type="submit" disabled={!entry.canSubmit || isLoading}>
+                {isLoading ? t('common.loading') : t('entry.confirm')}
               </Button>
-              <Button variant="secondary" onClick={entry.goToChoiceStep}>
+              <Button
+                variant="secondary"
+                onClick={entry.goToChoiceStep}
+                disabled={isLoading}
+              >
                 {t('entry.back')}
               </Button>
             </div>

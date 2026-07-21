@@ -9,6 +9,7 @@ export const ptBR = {
   'entry.codeLabel': 'Código da coleção',
   'entry.codeHint': 'São 8 caracteres. Não use 0, O, 1 nem I.',
   'entry.confirm': 'Entrar',
+  'common.loading': 'Carregando...',
   'entry.back': 'Voltar',
 } as const
 
