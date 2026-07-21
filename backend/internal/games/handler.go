@@ -25,11 +25,44 @@ type createRequest struct {
 	Name string `json:"name"`
 }
 
+type visibilityRequest struct {
+	Visible *bool `json:"visible"`
+}
+
 func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.list)
 	r.Post("/", h.create)
 	r.Patch("/{gameID}", h.rename)
+	r.Patch("/{gameID}/visibility", h.setVisibility)
 	r.Delete("/{gameID}", h.delete)
+}
+
+func (h *Handler) setVisibility(w http.ResponseWriter, r *http.Request) {
+	gameID, err := strconv.ParseInt(chi.URLParam(r, "gameID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de jogo inválido")
+		return
+	}
+
+	var body visibilityRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
+		return
+	}
+	if body.Visible == nil {
+		httpjson.Error(w, http.StatusBadRequest, "campo visible é obrigatório")
+		return
+	}
+
+	updated, err := h.service.SetVisibility(
+		r.Context(), chi.URLParam(r, "code"), gameID, *body.Visible,
+	)
+	if err != nil {
+		writeError(w, err, "alterar visibilidade do jogo")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, updated)
 }
 
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {

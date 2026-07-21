@@ -96,6 +96,25 @@ func (r *Repository) UpdateName(ctx context.Context, collectionID int64, gameID 
 	return updated, nil
 }
 
+func (r *Repository) UpdateVisibility(ctx context.Context, collectionID int64, gameID int64, visible bool) (Game, error) {
+	var updated Game
+
+	err := r.pool.QueryRow(ctx,
+		`UPDATE games SET visible = $3
+		 WHERE id = $2 AND collection_id = $1
+		 RETURNING id, name, is_official, visible`,
+		collectionID, gameID, visible,
+	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.Visible)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Game{}, ErrNotFound
+		}
+		return Game{}, fmt.Errorf("atualizar visibilidade do jogo: %w", err)
+	}
+
+	return updated, nil
+}
+
 func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int64) error {
 	tag, err := r.pool.Exec(ctx,
 		`DELETE FROM games WHERE id = $2 AND collection_id = $1`,

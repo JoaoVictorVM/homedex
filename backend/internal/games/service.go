@@ -56,6 +56,15 @@ func (s *Service) Rename(ctx context.Context, rawCode string, gameID int64, rawN
 	return s.repo.UpdateName(ctx, owner.ID, gameID, name)
 }
 
+func (s *Service) SetVisibility(ctx context.Context, rawCode string, gameID int64, visible bool) (Game, error) {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return Game{}, err
+	}
+
+	return s.repo.UpdateVisibility(ctx, owner.ID, gameID, visible)
+}
+
 func (s *Service) Delete(ctx context.Context, rawCode string, gameID int64) error {
 	owner, err := s.collections.Get(ctx, rawCode)
 	if err != nil {
