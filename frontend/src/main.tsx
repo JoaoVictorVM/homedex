@@ -5,6 +5,7 @@ import './styles/tokens.css'
 import './styles/global.css'
 import { App } from './App.tsx'
 import { I18nProvider } from './shared/i18n/I18nProvider.tsx'
+import { QueryProvider } from './lib/QueryProvider.tsx'
 
 const rootElement = document.getElementById('root')
 
@@ -15,7 +16,9 @@ if (rootElement === null) {
 createRoot(rootElement).render(
   <StrictMode>
     <I18nProvider>
-      <App />
+      <QueryProvider>
+        <App />
+      </QueryProvider>
     </I18nProvider>
   </StrictMode>,
 )
