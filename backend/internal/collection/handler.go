@@ -28,6 +28,11 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 
 	found, err := h.service.Get(r.Context(), code)
 	if err != nil {
+		if errors.Is(err, ErrInvalidCode) {
+			httpjson.Error(w, http.StatusBadRequest,
+				"código inválido: use 8 caracteres, sem os caracteres 0, O, 1, I e L")
+			return
+		}
 		if errors.Is(err, ErrNotFound) {
 			httpjson.Error(w, http.StatusNotFound, "código de coleção não encontrado")
 			return

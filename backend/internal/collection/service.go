@@ -39,6 +39,11 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 	)
 }
 
-func (s *Service) Get(ctx context.Context, code string) (Collection, error) {
+func (s *Service) Get(ctx context.Context, rawCode string) (Collection, error) {
+	code, err := ParseCode(rawCode)
+	if err != nil {
+		return Collection{}, err
+	}
+
 	return s.repo.FindByCode(ctx, code)
 }
