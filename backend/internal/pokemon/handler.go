@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -37,7 +38,28 @@ func (b createRequest) toNewPokemon() NewPokemon {
 }
 
 func (h *Handler) Register(r chi.Router) {
+	r.Get("/", h.listByBox)
 	r.Post("/", h.create)
+}
+
+func (h *Handler) listByBox(w http.ResponseWriter, r *http.Request) {
+	boxNumber := 1
+	if raw := r.URL.Query().Get("box"); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil {
+			httpjson.Error(w, http.StatusBadRequest, "parâmetro box deve ser um número")
+			return
+		}
+		boxNumber = parsed
+	}
+
+	found, err := h.service.ListByBox(r.Context(), chi.URLParam(r, "code"), boxNumber)
+	if err != nil {
+		writeError(w, err, "listar pokémon da box")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, found)
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {

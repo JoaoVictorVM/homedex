@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"sync"
 
 	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
 	"github.com/JoaoVictorVM/homedex/backend/internal/pokeapi"
 )
+
+const maxParallelSprites = 8
 
 type collections interface {
 	Get(ctx context.Context, rawCode string) (collection.Collection, error)
@@ -60,9 +64,51 @@ func (s *Service) Create(ctx context.Context, rawCode string, novo NewPokemon) (
 	return created, nil
 }
 
+func (s *Service) ListByBox(ctx context.Context, rawCode string, boxNumber int) ([]Pokemon, error) {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if boxNumber < 1 || boxNumber > owner.BoxCount {
+		return nil, ErrInvalidPosition
+	}
+
+	found, err := s.repo.ListByBox(ctx, owner.ID, boxNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	s.fillSprites(ctx, found)
+
+	return found, nil
+}
+
+func (s *Service) fillSprites(ctx context.Context, list []Pokemon) {
+	sem := make(chan struct{}, maxParallelSprites)
+
+	var wg sync.WaitGroup
+	for i := range list {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			list[i].Sprite = s.sprite(ctx, list[i])
+		}()
+	}
+
+	wg.Wait()
+}
+
 func (s *Service) sprite(ctx context.Context, p Pokemon) string {
 	url, err := s.pokedex.Sprite(ctx, p.PokemonName, p.Form, p.IsShiny)
-	if err != nil && !errors.Is(err, pokeapi.ErrNoSprite) {
+	if err != nil {
+		if !errors.Is(err, pokeapi.ErrNoSprite) {
+			slog.Warn("resolver sprite", "pokemon", p.PokemonName, "forma", p.Form, "erro", err)
+		}
 		return ""
 	}
 
