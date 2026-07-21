@@ -145,6 +145,9 @@ func writeError(w http.ResponseWriter, err error, action string) {
 			"já existe um jogo com esse nome nesta coleção")
 	case errors.Is(err, ErrNotFound):
 		httpjson.Error(w, http.StatusNotFound, "jogo não encontrado nesta coleção")
+	case errors.Is(err, ErrOfficial):
+		httpjson.Error(w, http.StatusForbidden,
+			"jogos oficiais não podem ser renomeados nem excluídos")
 	case errors.Is(err, ErrInUse):
 		httpjson.Error(w, http.StatusConflict,
 			"não é possível excluir: existem Pokémon vinculados a este jogo")

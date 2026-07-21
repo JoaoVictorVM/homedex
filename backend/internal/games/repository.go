@@ -78,13 +78,13 @@ func (r *Repository) UpdateName(ctx context.Context, collectionID int64, gameID 
 
 	err := r.pool.QueryRow(ctx,
 		`UPDATE games SET name = $3
-		 WHERE id = $2 AND collection_id = $1
+		 WHERE id = $2 AND collection_id = $1 AND NOT is_official
 		 RETURNING id, name, is_official, visible`,
 		collectionID, gameID, name,
 	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.Visible)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return Game{}, ErrNotFound
+			return Game{}, r.rejectionReason(ctx, collectionID, gameID)
 		}
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode {
@@ -117,7 +117,7 @@ func (r *Repository) UpdateVisibility(ctx context.Context, collectionID int64, g
 
 func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int64) error {
 	tag, err := r.pool.Exec(ctx,
-		`DELETE FROM games WHERE id = $2 AND collection_id = $1`,
+		`DELETE FROM games WHERE id = $2 AND collection_id = $1 AND NOT is_official`,
 		collectionID, gameID,
 	)
 	if err != nil {
@@ -130,8 +130,29 @@ func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int6
 	}
 
 	if tag.RowsAffected() == 0 {
-		return ErrNotFound
+		return r.rejectionReason(ctx, collectionID, gameID)
 	}
 
 	return nil
+}
+
+func (r *Repository) rejectionReason(ctx context.Context, collectionID int64, gameID int64) error {
+	var isOfficial bool
+
+	err := r.pool.QueryRow(ctx,
+		`SELECT is_official FROM games WHERE id = $2 AND collection_id = $1`,
+		collectionID, gameID,
+	).Scan(&isOfficial)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("consultar jogo: %w", err)
+	}
+
+	if isOfficial {
+		return ErrOfficial
+	}
+
+	return ErrNotFound
 }
