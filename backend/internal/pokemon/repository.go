@@ -8,6 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/JoaoVictorVM/homedex/backend/internal/database"
 )
 
 const uniqueViolationCode = "23505"
@@ -104,6 +106,82 @@ func (r *Repository) Update(ctx context.Context, collectionID int64, pokemonID i
 	}
 
 	return updated, nil
+}
+
+func (r *Repository) UpdatePosition(ctx context.Context, collectionID int64, pokemonID int64, boxNumber int, slot int) ([]Pokemon, error) {
+	var affected []Pokemon
+
+	err := database.InTx(ctx, r.pool, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `SET CONSTRAINTS pokemons_position_unique DEFERRED`); err != nil {
+			return fmt.Errorf("adiar constraint de posição: %w", err)
+		}
+
+		var currentBox, currentSlot int
+		err := tx.QueryRow(ctx,
+			`SELECT box_number, slot FROM pokemons
+			 WHERE id = $2 AND collection_id = $1
+			 FOR UPDATE`,
+			collectionID, pokemonID,
+		).Scan(&currentBox, &currentSlot)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return ErrNotFound
+			}
+			return fmt.Errorf("consultar posição atual: %w", err)
+		}
+
+		var occupantID int64
+		err = tx.QueryRow(ctx,
+			`SELECT id FROM pokemons
+			 WHERE collection_id = $1 AND box_number = $2 AND slot = $3
+			 FOR UPDATE`,
+			collectionID, boxNumber, slot,
+		).Scan(&occupantID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("consultar ocupante do slot: %w", err)
+		}
+
+		swap := err == nil && occupantID != pokemonID
+
+		moved, err := movePokemon(ctx, tx, collectionID, pokemonID, boxNumber, slot)
+		if err != nil {
+			return err
+		}
+		affected = append(affected, moved)
+
+		if swap {
+			swapped, err := movePokemon(ctx, tx, collectionID, occupantID, currentBox, currentSlot)
+			if err != nil {
+				return err
+			}
+			affected = append(affected, swapped)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return affected, nil
+}
+
+func movePokemon(ctx context.Context, tx pgx.Tx, collectionID int64, pokemonID int64, boxNumber int, slot int) (Pokemon, error) {
+	var moved Pokemon
+
+	err := tx.QueryRow(ctx,
+		`UPDATE pokemons SET box_number = $3, slot = $4
+		 WHERE id = $2 AND collection_id = $1
+		 RETURNING id, pokemon_name, COALESCE(nickname, ''), is_shiny, gender,
+			COALESCE(form, ''), game_id, box_number, slot`,
+		collectionID, pokemonID, boxNumber, slot,
+	).Scan(&moved.ID, &moved.PokemonName, &moved.Nickname, &moved.IsShiny, &moved.Gender,
+		&moved.Form, &moved.GameID, &moved.BoxNumber, &moved.Slot)
+	if err != nil {
+		return Pokemon{}, fmt.Errorf("mover pokémon: %w", err)
+	}
+
+	return moved, nil
 }
 
 func (r *Repository) Delete(ctx context.Context, collectionID int64, pokemonID int64) error {

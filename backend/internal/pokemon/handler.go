@@ -50,11 +50,45 @@ func (b editRequest) toEditPokemon() EditPokemon {
 	return EditPokemon(b)
 }
 
+type positionRequest struct {
+	BoxNumber *int `json:"boxNumber"`
+	Slot      *int `json:"slot"`
+}
+
 func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.listByBox)
 	r.Post("/", h.create)
 	r.Patch("/{pokemonID}", h.update)
+	r.Patch("/{pokemonID}/position", h.move)
 	r.Delete("/{pokemonID}", h.delete)
+}
+
+func (h *Handler) move(w http.ResponseWriter, r *http.Request) {
+	pokemonID, err := strconv.ParseInt(chi.URLParam(r, "pokemonID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de pokémon inválido")
+		return
+	}
+
+	var body positionRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
+		return
+	}
+	if body.BoxNumber == nil || body.Slot == nil {
+		httpjson.Error(w, http.StatusBadRequest, "campos boxNumber e slot são obrigatórios")
+		return
+	}
+
+	affected, err := h.service.Move(
+		r.Context(), chi.URLParam(r, "code"), pokemonID, *body.BoxNumber, *body.Slot,
+	)
+	if err != nil {
+		writeError(w, err, "mover pokémon")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, affected)
 }
 
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {

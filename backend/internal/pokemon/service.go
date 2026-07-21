@@ -90,6 +90,29 @@ func (s *Service) Update(ctx context.Context, rawCode string, pokemonID int64, e
 	return updated, nil
 }
 
+func (s *Service) Move(ctx context.Context, rawCode string, pokemonID int64, boxNumber int, slot int) ([]Pokemon, error) {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if boxNumber < 1 || boxNumber > owner.BoxCount {
+		return nil, ErrInvalidPosition
+	}
+	if slot < 0 || slot >= SlotsPerBox {
+		return nil, ErrInvalidPosition
+	}
+
+	affected, err := s.repo.UpdatePosition(ctx, owner.ID, pokemonID, boxNumber, slot)
+	if err != nil {
+		return nil, err
+	}
+
+	s.fillSprites(ctx, affected)
+
+	return affected, nil
+}
+
 func (s *Service) Delete(ctx context.Context, rawCode string, pokemonID int64) error {
 	owner, err := s.collections.Get(ctx, rawCode)
 	if err != nil {
