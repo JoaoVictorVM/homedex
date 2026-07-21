@@ -53,6 +53,41 @@ func TestPokemon(t *testing.T) {
 	}
 }
 
+func TestPokemonCaiParaVariedadePadraoDaEspecie(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/pokemon/deoxys":
+			w.WriteHeader(http.StatusNotFound)
+		case "/pokemon-species/deoxys":
+			if _, err := w.Write([]byte(
+				`{"varieties":[{"is_default":false,"pokemon":{"name":"deoxys-attack"}},` +
+					`{"is_default":true,"pokemon":{"name":"deoxys-normal"}}]}`,
+			)); err != nil {
+				t.Errorf("escrever resposta: %v", err)
+			}
+		case "/pokemon/deoxys-normal":
+			if _, err := w.Write([]byte(
+				`{"id":386,"name":"deoxys-normal","sprites":{"front_default":"386.png","front_shiny":"shiny-386.png"},"forms":[{"name":"deoxys-normal"}]}`,
+			)); err != nil {
+				t.Errorf("escrever resposta: %v", err)
+			}
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := New(Options{BaseURL: server.URL})
+
+	got, err := client.Pokemon(context.Background(), "Deoxys")
+	if err != nil {
+		t.Fatalf("erro inesperado: %v", err)
+	}
+	if got.Name != "deoxys-normal" || got.Sprites.Default != "386.png" {
+		t.Errorf("pokémon = %+v", got)
+	}
+}
+
 func TestPokemonInexistente(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)

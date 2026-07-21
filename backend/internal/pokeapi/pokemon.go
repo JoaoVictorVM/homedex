@@ -40,7 +40,15 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 	}
 
 	var resp pokemonResponse
-	if err := c.Get(ctx, "pokemon/"+name, &resp); err != nil {
+	err = c.Get(ctx, "pokemon/"+name, &resp)
+	if errors.Is(err, ErrNotFound) {
+		variety, varietyErr := c.defaultVariety(ctx, name)
+		if varietyErr != nil {
+			return Pokemon{}, fmt.Errorf("buscar pokémon %q: %w", name, err)
+		}
+		err = c.Get(ctx, "pokemon/"+variety, &resp)
+	}
+	if err != nil {
 		return Pokemon{}, fmt.Errorf("buscar pokémon %q: %w", name, err)
 	}
 
@@ -58,6 +66,29 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 		},
 		Forms: forms,
 	}, nil
+}
+
+func (c *Client) defaultVariety(ctx context.Context, name string) (string, error) {
+	var resp struct {
+		Varieties []struct {
+			IsDefault bool `json:"is_default"`
+			Pokemon   struct {
+				Name string `json:"name"`
+			} `json:"pokemon"`
+		} `json:"varieties"`
+	}
+
+	if err := c.Get(ctx, "pokemon-species/"+name, &resp); err != nil {
+		return "", fmt.Errorf("buscar espécie %q: %w", name, err)
+	}
+
+	for _, variety := range resp.Varieties {
+		if variety.IsDefault {
+			return variety.Pokemon.Name, nil
+		}
+	}
+
+	return "", ErrNotFound
 }
 
 func NormalizeName(raw string) (string, error) {
