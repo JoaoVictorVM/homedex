@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/httprate"
 
 	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
+	"github.com/JoaoVictorVM/homedex/backend/internal/games"
 )
 
 const (
@@ -30,6 +31,7 @@ type Pinger interface {
 
 type Handlers struct {
 	Collections *collection.Handler
+	Games       *games.Handler
 }
 
 func New(cfg Config, db Pinger, handlers Handlers) *http.Server {
@@ -53,6 +55,7 @@ func New(cfg Config, db Pinger, handlers Handlers) *http.Server {
 
 	router.Get("/health", handleHealth(db))
 	router.Route("/collections", handlers.Collections.Register)
+	router.Route("/collections/{code}/games", handlers.Games.Register)
 
 	return &http.Server{
 		Addr:              ":" + cfg.Port,

@@ -14,6 +14,7 @@ import (
 
 	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
 	"github.com/JoaoVictorVM/homedex/backend/internal/database"
+	"github.com/JoaoVictorVM/homedex/backend/internal/games"
 	"github.com/JoaoVictorVM/homedex/backend/internal/server"
 )
 
@@ -54,15 +55,20 @@ func run() error {
 		return fmt.Errorf("executar migrations: %w", err)
 	}
 
-	collections := collection.NewHandler(
-		collection.NewService(collection.NewRepository(pool)),
+	collectionService := collection.NewService(
+		collection.NewRepository(pool),
+		games.OfficialNames(),
 	)
+	gamesService := games.NewService(games.NewRepository(pool), collectionService)
 
 	srv := server.New(server.Config{
 		Port:           port,
 		FrontendOrigin: frontendOrigin,
 		TrustProxy:     trustProxy,
-	}, pool, server.Handlers{Collections: collections})
+	}, pool, server.Handlers{
+		Collections: collection.NewHandler(collectionService),
+		Games:       games.NewHandler(gamesService),
+	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

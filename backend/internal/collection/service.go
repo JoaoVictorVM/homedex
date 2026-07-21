@@ -4,18 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/JoaoVictorVM/homedex/backend/internal/games"
 )
 
 const maxCodeAttempts = 5
 
 type Service struct {
-	repo *Repository
+	repo          *Repository
+	officialGames []string
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, officialGames []string) *Service {
+	return &Service{repo: repo, officialGames: officialGames}
 }
 
 func (s *Service) Create(ctx context.Context) (Collection, error) {
@@ -25,7 +24,7 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 			return Collection{}, err
 		}
 
-		created, err := s.repo.Insert(ctx, code, games.OfficialNames())
+		created, err := s.repo.Insert(ctx, code, s.officialGames)
 		if err == nil {
 			return created, nil
 		}
