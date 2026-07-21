@@ -43,6 +43,15 @@ type NewPokemon struct {
 	Slot        int
 }
 
+type EditPokemon struct {
+	PokemonName string
+	Nickname    string
+	IsShiny     bool
+	Gender      string
+	Form        string
+	GameID      int64
+}
+
 func validGender(gender string) bool {
 	switch gender {
 	case GenderMale, GenderFemale, GenderGenderless:

@@ -37,9 +37,47 @@ func (b createRequest) toNewPokemon() NewPokemon {
 	return NewPokemon(b)
 }
 
+type editRequest struct {
+	PokemonName string `json:"pokemonName"`
+	Nickname    string `json:"nickname"`
+	IsShiny     bool   `json:"isShiny"`
+	Gender      string `json:"gender"`
+	Form        string `json:"form"`
+	GameID      int64  `json:"gameId"`
+}
+
+func (b editRequest) toEditPokemon() EditPokemon {
+	return EditPokemon(b)
+}
+
 func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.listByBox)
 	r.Post("/", h.create)
+	r.Patch("/{pokemonID}", h.update)
+}
+
+func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
+	pokemonID, err := strconv.ParseInt(chi.URLParam(r, "pokemonID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de pokémon inválido")
+		return
+	}
+
+	var body editRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
+		return
+	}
+
+	updated, err := h.service.Update(
+		r.Context(), chi.URLParam(r, "code"), pokemonID, body.toEditPokemon(),
+	)
+	if err != nil {
+		writeError(w, err, "editar pokémon")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, updated)
 }
 
 func (h *Handler) listByBox(w http.ResponseWriter, r *http.Request) {

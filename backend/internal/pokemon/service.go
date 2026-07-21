@@ -64,6 +64,32 @@ func (s *Service) Create(ctx context.Context, rawCode string, novo NewPokemon) (
 	return created, nil
 }
 
+func (s *Service) Update(ctx context.Context, rawCode string, pokemonID int64, edit EditPokemon) (Pokemon, error) {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	if !validGender(edit.Gender) {
+		return Pokemon{}, ErrInvalidGender
+	}
+
+	species, err := s.pokedex.Pokemon(ctx, edit.PokemonName)
+	if err != nil {
+		return Pokemon{}, fmt.Errorf("validar pokémon informado: %w", err)
+	}
+	edit.PokemonName = species.Name
+
+	updated, err := s.repo.Update(ctx, owner.ID, pokemonID, edit)
+	if err != nil {
+		return Pokemon{}, err
+	}
+
+	updated.Sprite = s.sprite(ctx, updated)
+
+	return updated, nil
+}
+
 func (s *Service) ListByBox(ctx context.Context, rawCode string, boxNumber int) ([]Pokemon, error) {
 	owner, err := s.collections.Get(ctx, rawCode)
 	if err != nil {

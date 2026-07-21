@@ -79,3 +79,47 @@ func (r *Repository) Insert(ctx context.Context, collectionID int64, novo NewPok
 
 	return created, nil
 }
+
+func (r *Repository) Update(ctx context.Context, collectionID int64, pokemonID int64, edit EditPokemon) (Pokemon, error) {
+	var updated Pokemon
+
+	err := r.pool.QueryRow(ctx,
+		`UPDATE pokemons p
+		 SET pokemon_name = $4, nickname = NULLIF($5, ''), is_shiny = $6,
+			gender = $7, form = NULLIF($8, ''), game_id = g.id
+		 FROM games g
+		 WHERE p.id = $2 AND p.collection_id = $1
+			AND g.id = $3 AND g.collection_id = $1
+		 RETURNING p.id, p.pokemon_name, COALESCE(p.nickname, ''), p.is_shiny, p.gender,
+			COALESCE(p.form, ''), p.game_id, p.box_number, p.slot`,
+		collectionID, pokemonID, edit.GameID, edit.PokemonName, edit.Nickname,
+		edit.IsShiny, edit.Gender, edit.Form,
+	).Scan(&updated.ID, &updated.PokemonName, &updated.Nickname, &updated.IsShiny,
+		&updated.Gender, &updated.Form, &updated.GameID, &updated.BoxNumber, &updated.Slot)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Pokemon{}, r.rejectionReason(ctx, collectionID, pokemonID)
+		}
+		return Pokemon{}, fmt.Errorf("atualizar pokémon: %w", err)
+	}
+
+	return updated, nil
+}
+
+func (r *Repository) rejectionReason(ctx context.Context, collectionID int64, pokemonID int64) error {
+	var exists bool
+
+	err := r.pool.QueryRow(ctx,
+		`SELECT EXISTS (SELECT 1 FROM pokemons WHERE id = $2 AND collection_id = $1)`,
+		collectionID, pokemonID,
+	).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("consultar pokémon: %w", err)
+	}
+
+	if !exists {
+		return ErrNotFound
+	}
+
+	return ErrGameNotFound
+}
