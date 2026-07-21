@@ -32,10 +32,16 @@ export function EntryModal({
           <>
             <p className={styles.question}>{t('entry.question')}</p>
             <div className={styles.actions}>
-              <Button onClick={entry.goToCodeStep}>{t('entry.hasCode')}</Button>
+              <Button onClick={entry.goToCodeStep} disabled={isLoading}>
+                {t('entry.hasCode')}
+              </Button>
               {onCreate !== undefined && (
-                <Button variant="secondary" onClick={onCreate}>
-                  {t('entry.createNew')}
+                <Button
+                  variant="secondary"
+                  onClick={onCreate}
+                  disabled={isLoading}
+                >
+                  {isLoading ? t('common.loading') : t('entry.createNew')}
                 </Button>
               )}
             </div>

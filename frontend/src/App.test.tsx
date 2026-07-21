@@ -59,6 +59,37 @@ describe('App', () => {
     )
   })
 
+  it('cria coleção zerada e entra nela', async () => {
+    mockFetch({ ...colecao, code: 'DHE4SNN2' }, 201)
+    renderWithProviders(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'DHE4SNN2' }),
+      ).toBeInTheDocument()
+    })
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8080/collections',
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
+
+  it('não busca a coleção recém-criada de novo', async () => {
+    mockFetch({ ...colecao, code: 'DHE4SNN2' }, 201)
+    renderWithProviders(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'DHE4SNN2' }),
+      ).toBeInTheDocument()
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+  })
+
   it('permanece no modal quando o código não existe', async () => {
     mockFetch({ error: 'código de coleção não encontrado' }, 404)
     renderWithProviders(<App />)
