@@ -15,6 +15,8 @@ import (
 	"github.com/JoaoVictorVM/homedex/backend/internal/collection"
 	"github.com/JoaoVictorVM/homedex/backend/internal/database"
 	"github.com/JoaoVictorVM/homedex/backend/internal/games"
+	"github.com/JoaoVictorVM/homedex/backend/internal/pokeapi"
+	"github.com/JoaoVictorVM/homedex/backend/internal/pokemon"
 	"github.com/JoaoVictorVM/homedex/backend/internal/server"
 )
 
@@ -60,6 +62,12 @@ func run() error {
 		games.OfficialNames(),
 	)
 	gamesService := games.NewService(games.NewRepository(pool), collectionService)
+	pokeapiClient := pokeapi.New(pokeapi.Options{})
+	pokemonService := pokemon.NewService(
+		pokemon.NewRepository(pool),
+		collectionService,
+		pokeapiClient,
+	)
 
 	srv := server.New(server.Config{
 		Port:           port,
@@ -68,6 +76,7 @@ func run() error {
 	}, pool, server.Handlers{
 		Collections: collection.NewHandler(collectionService),
 		Games:       games.NewHandler(gamesService),
+		Pokemons:    pokemon.NewHandler(pokemonService),
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
