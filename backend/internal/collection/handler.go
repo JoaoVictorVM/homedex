@@ -30,7 +30,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, ErrInvalidCode) {
 			httpjson.Error(w, http.StatusBadRequest,
-				"código inválido: use 8 caracteres, sem os caracteres 0, O, 1, I e L")
+				"código inválido: use 8 caracteres, sem os caracteres 0, O, 1 e I")
 			return
 		}
 		if errors.Is(err, ErrNotFound) {

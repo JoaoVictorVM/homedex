@@ -60,6 +60,8 @@
 
   --color-success: var(--color-green-500);
   --color-danger: var(--color-red-500);
+  --color-disabled: var(--color-gray-300);
+  --color-overlay: rgba(24, 24, 24, 0.72);
 
   --font-family-base: 'Press Start 2P', 'Courier New', monospace;
 

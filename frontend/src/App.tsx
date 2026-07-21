@@ -1,8 +1,20 @@
+import { useState } from 'react'
 import type { JSX } from 'react'
-import { useI18n } from './shared/i18n/useI18n.ts'
+import { EntryModal } from './features/collection/components/EntryModal/EntryModal.tsx'
 
 export function App(): JSX.Element {
-  const { t } = useI18n()
+  const [code, setCode] = useState<string | null>(null)
 
-  return <h1>{t('app.title')}</h1>
+  if (code === null) {
+    return (
+      <EntryModal
+        onSubmitCode={setCode}
+        onCreate={() => {
+          setCode('')
+        }}
+      />
+    )
+  }
+
+  return <h1>{code}</h1>
 }

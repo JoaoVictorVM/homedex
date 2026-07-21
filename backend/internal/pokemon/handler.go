@@ -195,7 +195,7 @@ func writeError(w http.ResponseWriter, err error, action string) {
 	switch {
 	case errors.Is(err, collection.ErrInvalidCode):
 		httpjson.Error(w, http.StatusBadRequest,
-			"código inválido: use 8 caracteres, sem os caracteres 0, O, 1, I e L")
+			"código inválido: use 8 caracteres, sem os caracteres 0, O, 1 e I")
 	case errors.Is(err, collection.ErrNotFound):
 		httpjson.Error(w, http.StatusNotFound, "código de coleção não encontrado")
 	case errors.Is(err, pokeapi.ErrNotFound), errors.Is(err, pokeapi.ErrInvalidName):
