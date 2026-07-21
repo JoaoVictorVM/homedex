@@ -106,6 +106,22 @@ func (r *Repository) Update(ctx context.Context, collectionID int64, pokemonID i
 	return updated, nil
 }
 
+func (r *Repository) Delete(ctx context.Context, collectionID int64, pokemonID int64) error {
+	tag, err := r.pool.Exec(ctx,
+		`DELETE FROM pokemons WHERE id = $2 AND collection_id = $1`,
+		collectionID, pokemonID,
+	)
+	if err != nil {
+		return fmt.Errorf("remover pokémon: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
 func (r *Repository) rejectionReason(ctx context.Context, collectionID int64, pokemonID int64) error {
 	var exists bool
 

@@ -54,6 +54,22 @@ func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.listByBox)
 	r.Post("/", h.create)
 	r.Patch("/{pokemonID}", h.update)
+	r.Delete("/{pokemonID}", h.delete)
+}
+
+func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
+	pokemonID, err := strconv.ParseInt(chi.URLParam(r, "pokemonID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de pokémon inválido")
+		return
+	}
+
+	if err := h.service.Delete(r.Context(), chi.URLParam(r, "code"), pokemonID); err != nil {
+		writeError(w, err, "remover pokémon")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) update(w http.ResponseWriter, r *http.Request) {

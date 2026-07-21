@@ -90,6 +90,15 @@ func (s *Service) Update(ctx context.Context, rawCode string, pokemonID int64, e
 	return updated, nil
 }
 
+func (s *Service) Delete(ctx context.Context, rawCode string, pokemonID int64) error {
+	owner, err := s.collections.Get(ctx, rawCode)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.Delete(ctx, owner.ID, pokemonID)
+}
+
 func (s *Service) ListByBox(ctx context.Context, rawCode string, boxNumber int) ([]Pokemon, error) {
 	owner, err := s.collections.Get(ctx, rawCode)
 	if err != nil {
