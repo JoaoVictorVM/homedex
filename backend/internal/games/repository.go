@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -66,4 +67,27 @@ func (r *Repository) Insert(ctx context.Context, collectionID int64, name string
 	}
 
 	return created, nil
+}
+
+func (r *Repository) UpdateName(ctx context.Context, collectionID int64, gameID int64, name string) (Game, error) {
+	var updated Game
+
+	err := r.pool.QueryRow(ctx,
+		`UPDATE games SET name = $3
+		 WHERE id = $2 AND collection_id = $1
+		 RETURNING id, name, is_official, visible`,
+		collectionID, gameID, name,
+	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.Visible)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Game{}, ErrNotFound
+		}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode {
+			return Game{}, ErrNameTaken
+		}
+		return Game{}, fmt.Errorf("atualizar nome do jogo: %w", err)
+	}
+
+	return updated, nil
 }

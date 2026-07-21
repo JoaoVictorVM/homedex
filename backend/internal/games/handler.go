@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -27,6 +28,29 @@ type createRequest struct {
 func (h *Handler) Register(r chi.Router) {
 	r.Get("/", h.list)
 	r.Post("/", h.create)
+	r.Patch("/{gameID}", h.rename)
+}
+
+func (h *Handler) rename(w http.ResponseWriter, r *http.Request) {
+	gameID, err := strconv.ParseInt(chi.URLParam(r, "gameID"), 10, 64)
+	if err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "identificador de jogo inválido")
+		return
+	}
+
+	var body createRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httpjson.Error(w, http.StatusBadRequest, "corpo da requisição inválido")
+		return
+	}
+
+	updated, err := h.service.Rename(r.Context(), chi.URLParam(r, "code"), gameID, body.Name)
+	if err != nil {
+		writeError(w, err, "renomear jogo")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, updated)
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +94,8 @@ func writeError(w http.ResponseWriter, err error, action string) {
 	case errors.Is(err, ErrNameTaken):
 		httpjson.Error(w, http.StatusConflict,
 			"já existe um jogo com esse nome nesta coleção")
+	case errors.Is(err, ErrNotFound):
+		httpjson.Error(w, http.StatusNotFound, "jogo não encontrado nesta coleção")
 	default:
 		slog.Error(action, "erro", err)
 		httpjson.Error(w, http.StatusInternalServerError, "não foi possível "+action)
