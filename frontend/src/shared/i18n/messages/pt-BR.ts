@@ -15,6 +15,10 @@ export const ptBR = {
   'entry.error.network':
     'Não foi possível falar com o servidor. Verifique sua conexão.',
   'entry.error.generic': 'Algo deu errado. Tente novamente.',
+  'box.addPokemon': 'Adicionar Pokémon',
+  'box.games': 'Jogos',
+  'box.detailPanel': 'Detalhes do Pokémon',
+  'box.boxArea': 'Box atual',
   'collection.codeLabel': 'Código da sua coleção',
   'collection.leave': 'Trocar de coleção',
   'entry.back': 'Voltar',
