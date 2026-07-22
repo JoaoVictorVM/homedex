@@ -46,6 +46,16 @@
   outline: var(--border-width-sm) solid var(--color-accent);
 }
 
+.error {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+  color: var(--color-text-inverse);
+  background-color: var(--color-danger);
+  border: var(--border-width-sm) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
 .hint {
   font-size: var(--font-size-2xs);
   line-height: var(--line-height-base);

@@ -1,22 +1,23 @@
 import type { JSX } from 'react'
 import { EntryModal } from './features/collection/components/EntryModal/EntryModal.tsx'
 import { LoadingScreen } from './shared/components/LoadingScreen/LoadingScreen.tsx'
-import { useCollection } from './features/collection/useCollection.ts'
+import { useCollectionSession } from './features/collection/useCollectionSession.ts'
 import { useCreateCollection } from './features/collection/useCreateCollection.ts'
-import { useCurrentCode } from './features/collection/useCurrentCode.ts'
+import { collectionErrorKey } from './features/collection/errors.ts'
 
 export function App(): JSX.Element {
-  const { code, restored, enter } = useCurrentCode()
-  const collection = useCollection(code)
+  const { session, enter } = useCollectionSession()
   const createCollection = useCreateCollection(enter)
 
-  if (collection.data !== undefined) {
-    return <h1>{collection.data.code}</h1>
+  if (session.status === 'ready') {
+    return <h1>{session.collection.code}</h1>
   }
 
-  if (restored && collection.isLoading) {
+  if (session.status === 'restoring') {
     return <LoadingScreen />
   }
+
+  const failure = session.error ?? createCollection.error
 
   return (
     <EntryModal
@@ -24,7 +25,8 @@ export function App(): JSX.Element {
       onCreate={() => {
         createCollection.mutate()
       }}
-      isLoading={collection.isFetching || createCollection.isPending}
+      isLoading={session.isSearching || createCollection.isPending}
+      errorKey={failure === null ? null : collectionErrorKey(failure)}
     />
   )
 }

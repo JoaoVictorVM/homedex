@@ -166,6 +166,43 @@ describe('App', () => {
     })
   })
 
+  it('avisa que o código não existe', async () => {
+    mockFetch({ error: 'código de coleção não encontrado' }, 404)
+    renderWithProviders(<App />)
+
+    await digitarCodigo('AAAAAAAA')
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/not found/i)
+    })
+  })
+
+  it('avisa quando não consegue falar com o servidor', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new TypeError('failed to fetch'))),
+    )
+    renderWithProviders(<App />)
+
+    await digitarCodigo('A7K9F2QX')
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/server/i)
+    })
+  })
+
+  it('esquece a coleção salva que não existe mais e explica o motivo', async () => {
+    localStorage.setItem('homedex.code', 'A7K9F2QX')
+    mockFetch({ error: 'código de coleção não encontrado' }, 404)
+    renderWithProviders(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/not found/i)
+    })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(localStorage.getItem('homedex.code')).toBeNull()
+  })
+
   it('permanece no modal quando o código não existe', async () => {
     mockFetch({ error: 'código de coleção não encontrado' }, 404)
     renderWithProviders(<App />)

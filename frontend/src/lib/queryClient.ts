@@ -22,9 +22,11 @@ export function createQueryClient(): QueryClient {
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         refetchOnWindowFocus: false,
+        networkMode: 'always',
         retry: shouldRetry,
       },
       mutations: {
+        networkMode: 'always',
         retry: false,
       },
     },

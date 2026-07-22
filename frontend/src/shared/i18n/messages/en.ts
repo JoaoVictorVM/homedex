@@ -12,5 +12,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'entry.codeHint': 'It has 8 characters. Do not use 0, O, 1 or I.',
   'entry.confirm': 'Enter',
   'common.loading': 'Loading...',
+  'entry.error.notFound': 'Code not found. Check it and try again.',
+  'entry.error.invalidCode': 'Invalid code. Check the 8 characters.',
+  'entry.error.network': 'Could not reach the server. Check your connection.',
+  'entry.error.generic': 'Something went wrong. Try again.',
   'entry.back': 'Back',
 }

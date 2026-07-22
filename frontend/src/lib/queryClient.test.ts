@@ -40,4 +40,11 @@ describe('createQueryClient', () => {
   it('não repete mutations', () => {
     expect(createQueryClient().getDefaultOptions().mutations?.retry).toBe(false)
   })
+
+  it('reporta falha de rede em vez de pausar a requisição', () => {
+    const defaults = createQueryClient().getDefaultOptions()
+
+    expect(defaults.queries?.networkMode).toBe('always')
+    expect(defaults.mutations?.networkMode).toBe('always')
+  })
 })

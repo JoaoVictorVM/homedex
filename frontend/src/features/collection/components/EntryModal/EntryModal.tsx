@@ -2,6 +2,7 @@ import type { FormEvent, JSX } from 'react'
 import { Modal } from '../../../../shared/components/Modal/Modal.tsx'
 import { Button } from '../../../../shared/components/Button/Button.tsx'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
+import type { MessageKey } from '../../../../shared/i18n/messages/pt-BR.ts'
 import { codeLength } from '../../code.ts'
 import { useEntryModal } from './useEntryModal.ts'
 import styles from './EntryModal.module.css'
@@ -10,12 +11,14 @@ type EntryModalProps = {
   onSubmitCode: (code: string) => void
   isLoading?: boolean
   onCreate?: () => void
+  errorKey?: MessageKey | null
 }
 
 export function EntryModal({
   onSubmitCode,
   isLoading = false,
   onCreate,
+  errorKey = null,
 }: EntryModalProps): JSX.Element {
   const { t } = useI18n()
   const entry = useEntryModal(onSubmitCode)
@@ -28,6 +31,11 @@ export function EntryModal({
   return (
     <Modal title={t('entry.title')}>
       <div className={styles.content}>
+        {errorKey !== null && (
+          <p className={styles.error} role="alert">
+            {t(errorKey)}
+          </p>
+        )}
         {entry.step === 'choice' ? (
           <>
             <p className={styles.question}>{t('entry.question')}</p>
