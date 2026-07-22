@@ -3,21 +3,26 @@ import type { JSX } from 'react'
 import { EntryModal } from './features/collection/components/EntryModal/EntryModal.tsx'
 import { BoxScreen } from './features/box/components/BoxScreen/BoxScreen.tsx'
 import { BoxContent } from './features/box/components/BoxContent/BoxContent.tsx'
+import { BoxNavigator } from './features/box/components/BoxNavigator/BoxNavigator.tsx'
 import { PokemonDetail } from './features/pokemon/components/PokemonDetail/PokemonDetail.tsx'
 import { LoadingScreen } from './shared/components/LoadingScreen/LoadingScreen.tsx'
 import { useCollectionSession } from './features/collection/useCollectionSession.ts'
 import { useCreateCollection } from './features/collection/useCreateCollection.ts'
 import { collectionErrorKey } from './features/collection/errors.ts'
 
-const currentBox = 1
-
 export function App(): JSX.Element {
   const { session, enter, leave } = useCollectionSession()
   const createCollection = useCreateCollection(enter)
+  const [boxNumber, setBoxNumber] = useState(1)
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
 
+  function openBox(next: number): void {
+    setBoxNumber(next)
+    setSelectedSlot(null)
+  }
+
   if (session.status === 'ready') {
-    const { code } = session.collection
+    const { code, boxCount } = session.collection
 
     return (
       <BoxScreen
@@ -26,17 +31,24 @@ export function App(): JSX.Element {
         detail={
           <PokemonDetail
             code={code}
-            boxNumber={currentBox}
+            boxNumber={boxNumber}
             slot={selectedSlot}
           />
         }
         box={
-          <BoxContent
-            code={code}
-            boxNumber={currentBox}
-            selectedSlot={selectedSlot}
-            onSelect={setSelectedSlot}
-          />
+          <>
+            <BoxNavigator
+              boxNumber={boxNumber}
+              boxCount={boxCount}
+              onChange={openBox}
+            />
+            <BoxContent
+              code={code}
+              boxNumber={boxNumber}
+              selectedSlot={selectedSlot}
+              onSelect={setSelectedSlot}
+            />
+          </>
         }
       />
     )
