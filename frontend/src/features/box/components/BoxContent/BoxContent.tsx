@@ -7,9 +7,16 @@ import styles from './BoxContent.module.css'
 type BoxContentProps = {
   code: string
   boxNumber: number
+  selectedSlot?: number | null
+  onSelect?: (slot: number) => void
 }
 
-export function BoxContent({ code, boxNumber }: BoxContentProps): JSX.Element {
+export function BoxContent({
+  code,
+  boxNumber,
+  selectedSlot = null,
+  onSelect,
+}: BoxContentProps): JSX.Element {
   const { t } = useI18n()
   const pokemons = useBoxPokemons(code, boxNumber)
 
@@ -29,5 +36,11 @@ export function BoxContent({ code, boxNumber }: BoxContentProps): JSX.Element {
     )
   }
 
-  return <BoxGrid pokemons={pokemons.data} />
+  return (
+    <BoxGrid
+      pokemons={pokemons.data}
+      selectedSlot={selectedSlot}
+      onSelect={onSelect}
+    />
+  )
 }

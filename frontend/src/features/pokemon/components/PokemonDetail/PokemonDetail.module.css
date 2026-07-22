@@ -1,0 +1,84 @@
+.detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.sprite {
+  width: var(--size-sprite-detail);
+  height: var(--size-sprite-detail);
+  object-fit: contain;
+}
+
+.spriteFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-sprite-detail);
+  height: var(--size-sprite-detail);
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-secondary);
+  background-color: var(--color-gray-100);
+  border: var(--border-width-sm) solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+}
+
+.name {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.species {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-secondary);
+}
+
+.attributes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-base);
+}
+
+.label {
+  color: var(--color-text-secondary);
+}
+
+.value {
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+.male {
+  color: var(--color-male);
+}
+
+.female {
+  color: var(--color-female);
+}
+
+.shiny {
+  color: var(--color-orange-700);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-panel-detail);
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+}

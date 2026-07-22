@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { BoxGrid } from './BoxGrid.tsx'
 import type { Pokemon } from '../../../pokemon/pokemon.schema.ts'
@@ -43,24 +44,49 @@ describe('BoxGrid', () => {
 
     const todos = slots()
 
-    expect(within(todos[0]!).getByRole('img')).toHaveAttribute(
-      'alt',
-      'bulbasaur',
-    )
-    expect(within(todos[29]!).getByRole('img')).toHaveAttribute('alt', 'mew')
-    expect(within(todos[1]!).queryByRole('img')).not.toBeInTheDocument()
+    expect(
+      within(todos[0]!).getByRole('button', { name: 'bulbasaur' }),
+    ).toBeInTheDocument()
+    expect(
+      within(todos[29]!).getByRole('button', { name: 'mew' }),
+    ).toBeInTheDocument()
+    expect(within(todos[1]!).queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('usa o apelido como identificação quando existe', () => {
     renderWithProviders(<BoxGrid pokemons={[pokemon({ nickname: 'Bulby' })]} />)
 
-    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Bulby')
+    expect(screen.getByRole('button', { name: 'Bulby' })).toBeInTheDocument()
   })
 
   it('não quebra quando a sprite não veio', () => {
     renderWithProviders(<BoxGrid pokemons={[pokemon({ sprite: '' })]} />)
 
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    expect(slots()).toHaveLength(30)
+    expect(
+      screen.getByRole('button', { name: 'bulbasaur' }),
+    ).toBeInTheDocument()
+  })
+
+  it('avisa a seleção ao clicar num pokémon', async () => {
+    const onSelect = vi.fn()
+    renderWithProviders(
+      <BoxGrid pokemons={[pokemon({ slot: 4 })]} onSelect={onSelect} />,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'bulbasaur' }))
+
+    expect(onSelect).toHaveBeenCalledWith(4)
+  })
+
+  it('marca o slot selecionado', () => {
+    renderWithProviders(
+      <BoxGrid pokemons={[pokemon({ slot: 4 })]} selectedSlot={4} />,
+    )
+
+    expect(screen.getByRole('button', { name: 'bulbasaur' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 })

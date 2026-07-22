@@ -5,21 +5,40 @@ import styles from './BoxSlot.module.css'
 type BoxSlotProps = {
   slot: number
   pokemon?: Pokemon
+  isSelected?: boolean
+  onSelect?: (slot: number) => void
 }
 
-export function BoxSlot({ slot, pokemon }: BoxSlotProps): JSX.Element {
-  const classes = [styles.slot, pokemon?.isShiny === true ? styles.shiny : '']
+export function BoxSlot({
+  slot,
+  pokemon,
+  isSelected = false,
+  onSelect,
+}: BoxSlotProps): JSX.Element {
+  const classes = [
+    styles.slot,
+    pokemon?.isShiny === true ? styles.shiny : '',
+    isSelected ? styles.selected : '',
+  ]
     .filter(Boolean)
     .join(' ')
 
   return (
     <li className={classes} data-slot={slot}>
-      {pokemon !== undefined && pokemon.sprite !== '' && (
-        <img
-          className={styles.sprite}
-          src={pokemon.sprite}
-          alt={displayName(pokemon)}
-        />
+      {pokemon !== undefined && (
+        <button
+          className={styles.button}
+          type="button"
+          aria-label={displayName(pokemon)}
+          aria-pressed={isSelected}
+          onClick={() => {
+            onSelect?.(slot)
+          }}
+        >
+          {pokemon.sprite !== '' && (
+            <img className={styles.sprite} src={pokemon.sprite} alt="" />
+          )}
+        </button>
       )}
     </li>
   )
