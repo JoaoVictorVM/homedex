@@ -16,5 +16,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'entry.error.invalidCode': 'Invalid code. Check the 8 characters.',
   'entry.error.network': 'Could not reach the server. Check your connection.',
   'entry.error.generic': 'Something went wrong. Try again.',
+  'collection.codeLabel': 'Your collection code',
+  'collection.leave': 'Switch collection',
   'entry.back': 'Back',
 }

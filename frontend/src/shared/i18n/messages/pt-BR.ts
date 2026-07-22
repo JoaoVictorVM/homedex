@@ -15,6 +15,8 @@ export const ptBR = {
   'entry.error.network':
     'Não foi possível falar com o servidor. Verifique sua conexão.',
   'entry.error.generic': 'Algo deu errado. Tente novamente.',
+  'collection.codeLabel': 'Código da sua coleção',
+  'collection.leave': 'Trocar de coleção',
   'entry.back': 'Voltar',
 } as const
 

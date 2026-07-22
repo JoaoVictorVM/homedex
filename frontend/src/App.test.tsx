@@ -53,9 +53,7 @@ describe('App', () => {
     await digitarCodigo('a7k9-f2qx')
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'A7K9F2QX' }),
-      ).toBeInTheDocument()
+      expect(screen.getByText('A7K9-F2QX')).toBeInTheDocument()
     })
     expect(fetch).toHaveBeenCalledWith(
       'http://localhost:8080/collections/A7K9F2QX',
@@ -70,9 +68,7 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'DHE4SNN2' }),
-      ).toBeInTheDocument()
+      expect(screen.getByText('DHE4-SNN2')).toBeInTheDocument()
     })
     expect(fetch).toHaveBeenCalledWith(
       'http://localhost:8080/collections',
@@ -87,9 +83,7 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: /create/i }))
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'DHE4SNN2' }),
-      ).toBeInTheDocument()
+      expect(screen.getByText('DHE4-SNN2')).toBeInTheDocument()
     })
     expect(fetch).toHaveBeenCalledOnce()
   })
@@ -114,9 +108,7 @@ describe('App', () => {
     expect(screen.getByRole('status')).toBeInTheDocument()
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'A7K9F2QX' }),
-      ).toBeInTheDocument()
+      expect(screen.getByText('A7K9-F2QX')).toBeInTheDocument()
     })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
@@ -149,9 +141,7 @@ describe('App', () => {
     })
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: 'A7K9F2QX' }),
-      ).toBeInTheDocument()
+      expect(screen.getByText('A7K9-F2QX')).toBeInTheDocument()
     })
   })
 
@@ -164,6 +154,31 @@ describe('App', () => {
     await waitFor(() => {
       expect(localStorage.getItem('homedex.code')).toBe('DHE4SNN2')
     })
+  })
+
+  it('exibe o código formatado com separador', async () => {
+    localStorage.setItem('homedex.code', 'A7K9F2QX')
+    mockFetch(colecao)
+    renderWithProviders(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByText('A7K9-F2QX')).toBeInTheDocument()
+    })
+  })
+
+  it('permite trocar de coleção, voltando ao modal', async () => {
+    localStorage.setItem('homedex.code', 'A7K9F2QX')
+    mockFetch(colecao)
+    renderWithProviders(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByText('A7K9-F2QX')).toBeInTheDocument()
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: /switch/i }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(localStorage.getItem('homedex.code')).toBeNull()
   })
 
   it('avisa que o código não existe', async () => {

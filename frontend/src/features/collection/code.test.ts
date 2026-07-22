@@ -1,9 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { isValidCode, normalizeCode } from './code.ts'
+import { formatCode, isValidCode, normalizeCode } from './code.ts'
 
 describe('normalizeCode', () => {
   it('remove separador, espaços e converte para maiúsculas', () => {
     expect(normalizeCode(' a7k9-f2qx ')).toBe('A7K9F2QX')
+  })
+})
+
+describe('formatCode', () => {
+  it('separa o código em dois blocos para leitura', () => {
+    expect(formatCode('A7K9F2QX')).toBe('A7K9-F2QX')
+  })
+
+  it('formata a partir de qualquer entrada válida', () => {
+    expect(formatCode(' a7k9-f2qx ')).toBe('A7K9-F2QX')
+  })
+
+  it('devolve o valor normalizado quando o tamanho não bate', () => {
+    expect(formatCode('A7K9')).toBe('A7K9')
   })
 })
 
