@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App.tsx'
 import { renderWithProviders } from './test/renderWithProviders.tsx'
 
@@ -31,6 +31,10 @@ async function digitarCodigo(code: string): Promise<void> {
 }
 
 describe('App', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   afterEach(() => {
     vi.unstubAllGlobals()
   })
@@ -88,6 +92,41 @@ describe('App', () => {
       ).toBeInTheDocument()
     })
     expect(fetch).toHaveBeenCalledOnce()
+  })
+
+  it('guarda o código usado para a próxima visita', async () => {
+    mockFetch(colecao)
+    renderWithProviders(<App />)
+
+    await digitarCodigo('a7k9-f2qx')
+
+    await waitFor(() => {
+      expect(localStorage.getItem('homedex.code')).toBe('A7K9F2QX')
+    })
+  })
+
+  it('entra direto na coleção salva, sem passar pelo modal', async () => {
+    localStorage.setItem('homedex.code', 'A7K9F2QX')
+    mockFetch(colecao)
+    renderWithProviders(<App />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'A7K9F2QX' }),
+      ).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('guarda o código da coleção recém-criada', async () => {
+    mockFetch({ ...colecao, code: 'DHE4SNN2' }, 201)
+    renderWithProviders(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }))
+
+    await waitFor(() => {
+      expect(localStorage.getItem('homedex.code')).toBe('DHE4SNN2')
+    })
   })
 
   it('permanece no modal quando o código não existe', async () => {
