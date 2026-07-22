@@ -5,6 +5,7 @@ import { BoxScreen } from './features/box/components/BoxScreen/BoxScreen.tsx'
 import { BoxContent } from './features/box/components/BoxContent/BoxContent.tsx'
 import { BoxNavigator } from './features/box/components/BoxNavigator/BoxNavigator.tsx'
 import { PokemonDetail } from './features/pokemon/components/PokemonDetail/PokemonDetail.tsx'
+import { AddPokemonModal } from './features/pokemon/components/AddPokemonModal/AddPokemonModal.tsx'
 import { LoadingScreen } from './shared/components/LoadingScreen/LoadingScreen.tsx'
 import { useCollectionSession } from './features/collection/useCollectionSession.ts'
 import { useCreateCollection } from './features/collection/useCreateCollection.ts'
@@ -16,6 +17,7 @@ export function App(): JSX.Element {
   const createCollection = useCreateCollection(enter)
   const [boxNumber, setBoxNumber] = useState(1)
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
+  const [isAddingPokemon, setIsAddingPokemon] = useState(false)
   const currentCode = session.status === 'ready' ? session.collection.code : ''
   const addBox = useAddBox(currentCode, openBox)
 
@@ -28,36 +30,50 @@ export function App(): JSX.Element {
     const { code, boxCount } = session.collection
 
     return (
-      <BoxScreen
-        code={code}
-        onLeave={leave}
-        detail={
-          <PokemonDetail
-            code={code}
-            boxNumber={boxNumber}
-            slot={selectedSlot}
-          />
-        }
-        box={
-          <>
-            <BoxNavigator
-              boxNumber={boxNumber}
-              boxCount={boxCount}
-              onChange={openBox}
-              onAddBox={() => {
-                addBox.mutate()
-              }}
-              isAddingBox={addBox.isPending}
-            />
-            <BoxContent
+      <>
+        <BoxScreen
+          code={code}
+          onLeave={leave}
+          onAddPokemon={() => {
+            setIsAddingPokemon(true)
+          }}
+          detail={
+            <PokemonDetail
               code={code}
               boxNumber={boxNumber}
-              selectedSlot={selectedSlot}
-              onSelect={setSelectedSlot}
+              slot={selectedSlot}
             />
-          </>
-        }
-      />
+          }
+          box={
+            <>
+              <BoxNavigator
+                boxNumber={boxNumber}
+                boxCount={boxCount}
+                onChange={openBox}
+                onAddBox={() => {
+                  addBox.mutate()
+                }}
+                isAddingBox={addBox.isPending}
+              />
+              <BoxContent
+                code={code}
+                boxNumber={boxNumber}
+                selectedSlot={selectedSlot}
+                onSelect={setSelectedSlot}
+              />
+            </>
+          }
+        />
+        {isAddingPokemon && (
+          <AddPokemonModal
+            code={code}
+            boxNumber={boxNumber}
+            onClose={() => {
+              setIsAddingPokemon(false)
+            }}
+          />
+        )}
+      </>
     )
   }
 

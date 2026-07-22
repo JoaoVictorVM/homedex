@@ -20,10 +20,24 @@
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
   padding: var(--space-3) var(--space-4);
   background-color: var(--color-bg-header);
   border-bottom: var(--border-width-sm) solid var(--color-border);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.close {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.close:hover {
+  color: var(--color-accent-strong);
 }
 
 .title {
@@ -33,5 +47,7 @@
 }
 
 .content {
+  max-height: 70dvh;
+  overflow-y: auto;
   padding: var(--space-5) var(--space-4);
 }
