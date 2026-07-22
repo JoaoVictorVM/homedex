@@ -1,0 +1,10 @@
+.screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-inverse);
+  text-shadow: var(--text-shadow-base);
+}

@@ -13,12 +13,23 @@ describe('useCurrentCode', () => {
     expect(result.current.code).toBeNull()
   })
 
-  it('recupera o código salvo ao montar', () => {
+  it('recupera o código salvo ao montar e marca como restaurado', () => {
     localStorage.setItem('homedex.code', 'A7K9F2QX')
 
     const { result } = renderHook(() => useCurrentCode())
 
     expect(result.current.code).toBe('A7K9F2QX')
+    expect(result.current.restored).toBe(true)
+  })
+
+  it('não marca como restaurado quando o código veio do usuário', () => {
+    const { result } = renderHook(() => useCurrentCode())
+
+    act(() => {
+      result.current.enter('DHE4SNN2')
+    })
+
+    expect(result.current.restored).toBe(false)
   })
 
   it('guarda o código ao entrar na coleção', () => {

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App.tsx'
@@ -110,12 +110,49 @@ describe('App', () => {
     mockFetch(colecao)
     renderWithProviders(<App />)
 
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
+
     await waitFor(() => {
       expect(
         screen.getByRole('heading', { name: 'A7K9F2QX' }),
       ).toBeInTheDocument()
     })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('mantém o modal aberto enquanto busca o código digitado', async () => {
+    let responder: (response: Response) => void = () => undefined
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            responder = resolve
+          }),
+      ),
+    )
+    renderWithProviders(<App />)
+
+    await digitarCodigo('a7k9-f2qx')
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+    act(() => {
+      responder(
+        new Response(JSON.stringify(colecao), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'A7K9F2QX' }),
+      ).toBeInTheDocument()
+    })
   })
 
   it('guarda o código da coleção recém-criada', async () => {
