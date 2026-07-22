@@ -18,6 +18,8 @@ export const ptBR = {
   'box.addPokemon': 'Adicionar Pokémon',
   'box.games': 'Jogos',
   'box.detailPanel': 'Detalhes do Pokémon',
+  'box.slots': 'Slots da box',
+  'box.loadError': 'Não foi possível carregar os Pokémon desta box.',
   'box.boxArea': 'Box atual',
   'collection.codeLabel': 'Código da sua coleção',
   'collection.leave': 'Trocar de coleção',

@@ -85,7 +85,10 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByText('DHE4-SNN2')).toBeInTheDocument()
     })
-    expect(fetch).toHaveBeenCalledOnce()
+    expect(fetch).not.toHaveBeenCalledWith(
+      'http://localhost:8080/collections/DHE4SNN2',
+      expect.anything(),
+    )
   })
 
   it('guarda o código usado para a próxima visita', async () => {

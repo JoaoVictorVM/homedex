@@ -1,0 +1,19 @@
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background-color: var(--color-bg-slot);
+  border: var(--border-width-sm) solid var(--color-green-700);
+  border-radius: var(--radius-sm);
+}
+
+.sprite {
+  width: var(--size-sprite-slot);
+  height: var(--size-sprite-slot);
+  object-fit: contain;
+}
+
+.shiny {
+  box-shadow: inset 0 0 0 var(--border-width-sm) var(--color-shiny);
+}

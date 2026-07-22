@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { EntryModal } from './features/collection/components/EntryModal/EntryModal.tsx'
 import { BoxScreen } from './features/box/components/BoxScreen/BoxScreen.tsx'
+import { BoxContent } from './features/box/components/BoxContent/BoxContent.tsx'
 import { LoadingScreen } from './shared/components/LoadingScreen/LoadingScreen.tsx'
 import { useCollectionSession } from './features/collection/useCollectionSession.ts'
 import { useCreateCollection } from './features/collection/useCreateCollection.ts'
@@ -11,7 +12,13 @@ export function App(): JSX.Element {
   const createCollection = useCreateCollection(enter)
 
   if (session.status === 'ready') {
-    return <BoxScreen code={session.collection.code} onLeave={leave} />
+    return (
+      <BoxScreen
+        code={session.collection.code}
+        onLeave={leave}
+        box={<BoxContent code={session.collection.code} boxNumber={1} />}
+      />
+    )
   }
 
   if (session.status === 'restoring') {

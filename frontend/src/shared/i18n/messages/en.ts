@@ -19,6 +19,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'box.addPokemon': 'Add Pokémon',
   'box.games': 'Games',
   'box.detailPanel': 'Pokémon details',
+  'box.slots': 'Box slots',
+  'box.loadError': 'Could not load the Pokémon in this box.',
   'box.boxArea': 'Current box',
   'collection.codeLabel': 'Your collection code',
   'collection.leave': 'Switch collection',
