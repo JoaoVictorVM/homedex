@@ -38,6 +38,15 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 	)
 }
 
+func (s *Service) AddBox(ctx context.Context, rawCode string) (Collection, error) {
+	code, err := ParseCode(rawCode)
+	if err != nil {
+		return Collection{}, err
+	}
+
+	return s.repo.AddBox(ctx, code)
+}
+
 func (s *Service) Get(ctx context.Context, rawCode string) (Collection, error) {
 	code, err := ParseCode(rawCode)
 	if err != nil {

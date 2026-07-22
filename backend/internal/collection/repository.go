@@ -12,12 +12,17 @@ import (
 	"github.com/JoaoVictorVM/homedex/backend/internal/database"
 )
 
-const uniqueViolationCode = "23505"
+const (
+	uniqueViolationCode = "23505"
+
+	MaxBoxes = 32
+)
 
 var (
 	errCodeTaken = errors.New("código de coleção já existe")
 
 	ErrNotFound = errors.New("coleção não encontrada")
+	ErrMaxBoxes = errors.New("limite de boxes da coleção atingido")
 )
 
 type Repository struct {
@@ -63,6 +68,33 @@ func (r *Repository) Insert(ctx context.Context, code string, officialGames []st
 	}
 
 	return created, nil
+}
+
+func (r *Repository) AddBox(ctx context.Context, code string) (Collection, error) {
+	var updated Collection
+
+	err := r.pool.QueryRow(ctx,
+		`UPDATE collections SET box_count = box_count + 1
+		 WHERE code = $1 AND box_count < $2
+		 RETURNING id, code, box_count, created_at`,
+		code, MaxBoxes,
+	).Scan(&updated.ID, &updated.Code, &updated.BoxCount, &updated.CreatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Collection{}, r.addBoxRejection(ctx, code)
+		}
+		return Collection{}, fmt.Errorf("adicionar box: %w", err)
+	}
+
+	return updated, nil
+}
+
+func (r *Repository) addBoxRejection(ctx context.Context, code string) error {
+	if _, err := r.FindByCode(ctx, code); err != nil {
+		return err
+	}
+
+	return ErrMaxBoxes
 }
 
 func (r *Repository) FindByCode(ctx context.Context, code string) (Collection, error) {

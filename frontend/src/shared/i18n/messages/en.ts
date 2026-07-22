@@ -24,6 +24,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'box.previous': 'Previous box',
   'box.next': 'Next box',
   'box.range': '{first}-{last}',
+  'box.addBox': 'New box',
+  'box.addBoxError': 'Could not add the box.',
   'box.loadError': 'Could not load the Pokémon in this box.',
   'box.boxArea': 'Current box',
   'common.yes': 'Yes',

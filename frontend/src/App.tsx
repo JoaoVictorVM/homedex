@@ -8,6 +8,7 @@ import { PokemonDetail } from './features/pokemon/components/PokemonDetail/Pokem
 import { LoadingScreen } from './shared/components/LoadingScreen/LoadingScreen.tsx'
 import { useCollectionSession } from './features/collection/useCollectionSession.ts'
 import { useCreateCollection } from './features/collection/useCreateCollection.ts'
+import { useAddBox } from './features/collection/useAddBox.ts'
 import { collectionErrorKey } from './features/collection/errors.ts'
 
 export function App(): JSX.Element {
@@ -15,6 +16,8 @@ export function App(): JSX.Element {
   const createCollection = useCreateCollection(enter)
   const [boxNumber, setBoxNumber] = useState(1)
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
+  const currentCode = session.status === 'ready' ? session.collection.code : ''
+  const addBox = useAddBox(currentCode, openBox)
 
   function openBox(next: number): void {
     setBoxNumber(next)
@@ -41,6 +44,10 @@ export function App(): JSX.Element {
               boxNumber={boxNumber}
               boxCount={boxCount}
               onChange={openBox}
+              onAddBox={() => {
+                addBox.mutate()
+              }}
+              isAddingBox={addBox.isPending}
             />
             <BoxContent
               code={code}

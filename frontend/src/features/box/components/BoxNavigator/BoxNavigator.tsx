@@ -2,18 +2,23 @@ import type { JSX } from 'react'
 import { Button } from '../../../../shared/components/Button/Button.tsx'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import { boxRange, nextBox, previousBox } from '../../boxRange.ts'
+import { maxBoxes } from '../../../collection/collection.schema.ts'
 import styles from './BoxNavigator.module.css'
 
 type BoxNavigatorProps = {
   boxNumber: number
   boxCount: number
   onChange: (boxNumber: number) => void
+  onAddBox?: () => void
+  isAddingBox?: boolean
 }
 
 export function BoxNavigator({
   boxNumber,
   boxCount,
   onChange,
+  onAddBox,
+  isAddingBox = false,
 }: BoxNavigatorProps): JSX.Element {
   const { t } = useI18n()
   const range = boxRange(boxNumber)
@@ -53,6 +58,16 @@ export function BoxNavigator({
       >
         {'>'}
       </Button>
+
+      {onAddBox !== undefined && (
+        <Button
+          className={styles.addBox}
+          onClick={onAddBox}
+          disabled={isAddingBox || boxCount >= maxBoxes}
+        >
+          {t('box.addBox')}
+        </Button>
+      )}
     </nav>
   )
 }

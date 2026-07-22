@@ -23,6 +23,8 @@ export const ptBR = {
   'box.previous': 'Box anterior',
   'box.next': 'Próxima box',
   'box.range': '{first}-{last}',
+  'box.addBox': 'Nova box',
+  'box.addBoxError': 'Não foi possível adicionar a box.',
   'box.loadError': 'Não foi possível carregar os Pokémon desta box.',
   'box.boxArea': 'Box atual',
   'common.yes': 'Sim',

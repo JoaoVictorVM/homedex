@@ -10,6 +10,17 @@ export function createCollection(signal?: AbortSignal): Promise<Collection> {
   })
 }
 
+export function addBox(
+  code: string,
+  signal?: AbortSignal,
+): Promise<Collection> {
+  return request(`/collections/${encodeURIComponent(code)}/boxes`, {
+    method: 'POST',
+    schema: collectionSchema,
+    signal,
+  })
+}
+
 export function fetchCollection(
   code: string,
   signal?: AbortSignal,
