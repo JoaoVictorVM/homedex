@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import type { Pokemon } from '../../../pokemon/pokemon.schema.ts'
+import { spriteSlotSize } from '../../../../shared/spriteSizes.ts'
 import styles from './BoxSlot.module.css'
 
 type BoxSlotProps = {
@@ -36,7 +37,15 @@ export function BoxSlot({
           }}
         >
           {pokemon.sprite !== '' && (
-            <img className={styles.sprite} src={pokemon.sprite} alt="" />
+            <img
+              className={styles.sprite}
+              src={pokemon.sprite}
+              alt=""
+              width={spriteSlotSize}
+              height={spriteSlotSize}
+              loading="lazy"
+              decoding="async"
+            />
           )}
         </button>
       )}

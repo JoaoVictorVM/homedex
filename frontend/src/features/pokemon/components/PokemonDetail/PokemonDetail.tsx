@@ -3,6 +3,7 @@ import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import type { MessageKey } from '../../../../shared/i18n/messages/pt-BR.ts'
 import { useGames } from '../../../games/useGames.ts'
 import { useBoxPokemons } from '../../../box/useBoxPokemons.ts'
+import { spriteDetailSize } from '../../../../shared/spriteSizes.ts'
 import type { Pokemon, PokemonGender } from '../../pokemon.schema.ts'
 import styles from './PokemonDetail.module.css'
 
@@ -50,6 +51,9 @@ export function PokemonDetail({
           className={styles.sprite}
           src={selected.sprite}
           alt={displayName(selected)}
+          width={spriteDetailSize}
+          height={spriteDetailSize}
+          decoding="async"
         />
       )}
 

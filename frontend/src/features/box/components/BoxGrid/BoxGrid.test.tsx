@@ -79,6 +79,17 @@ describe('BoxGrid', () => {
     expect(onSelect).toHaveBeenCalledWith(4)
   })
 
+  it('carrega as sprites sob demanda, com espaço reservado', () => {
+    renderWithProviders(<BoxGrid pokemons={[pokemon()]} />)
+
+    const sprite = screen.getByRole('presentation', { hidden: true })
+
+    expect(sprite).toHaveAttribute('loading', 'lazy')
+    expect(sprite).toHaveAttribute('decoding', 'async')
+    expect(sprite).toHaveAttribute('width', '48')
+    expect(sprite).toHaveAttribute('height', '48')
+  })
+
   it('marca o slot selecionado', () => {
     renderWithProviders(
       <BoxGrid pokemons={[pokemon({ slot: 4 })]} selectedSlot={4} />,
