@@ -4,6 +4,7 @@ import { Modal } from '../../../../shared/components/Modal/Modal.tsx'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import { useGames } from '../../useGames.ts'
 import { GameList } from './GameList.tsx'
+import { HackromForm } from './HackromForm.tsx'
 import styles from './GamesModal.module.css'
 
 type GamesModalProps = {
@@ -64,7 +65,10 @@ export function GamesModal({ code, onClose }: GamesModalProps): JSX.Element {
           (tab === 'official' ? (
             <GameList code={code} games={official} />
           ) : (
-            <GameList code={code} games={hackroms} />
+            <>
+              <HackromForm code={code} />
+              <GameList code={code} games={hackroms} />
+            </>
           ))}
       </div>
     </Modal>
