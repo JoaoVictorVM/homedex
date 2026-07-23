@@ -20,6 +20,7 @@ type collections interface {
 type pokedex interface {
 	Pokemon(ctx context.Context, name string) (pokeapi.Pokemon, error)
 	Sprite(ctx context.Context, name string, form string, shiny bool) (string, error)
+	Forms(ctx context.Context, name string) ([]string, error)
 }
 
 type Service struct {
@@ -30,6 +31,10 @@ type Service struct {
 
 func NewService(repo *Repository, collections collections, pokedex pokedex) *Service {
 	return &Service{repo: repo, collections: collections, pokedex: pokedex}
+}
+
+func (s *Service) ResolveForms(ctx context.Context, name string) ([]string, error) {
+	return s.pokedex.Forms(ctx, name)
 }
 
 func (s *Service) ResolveSprite(ctx context.Context, name string, form string, shiny bool) (string, error) {

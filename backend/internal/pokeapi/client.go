@@ -32,6 +32,7 @@ type Client struct {
 	http      *http.Client
 	pokemons  *cache[Pokemon]
 	varieties *cache[string]
+	forms     *cache[[]string]
 }
 
 func New(opts Options) *Client {
@@ -55,6 +56,7 @@ func New(opts Options) *Client {
 		http:      httpClient,
 		pokemons:  newCache[Pokemon](cacheSize),
 		varieties: newCache[string](cacheSize),
+		forms:     newCache[[]string](cacheSize),
 	}
 }
 

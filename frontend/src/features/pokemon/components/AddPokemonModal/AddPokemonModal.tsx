@@ -8,6 +8,7 @@ import { useBoxPokemons } from '../../../box/useBoxPokemons.ts'
 import { firstFreeSlot } from '../../../box/freeSlot.ts'
 import { useAddPokemon } from '../../useAddPokemon.ts'
 import { SpritePreview } from './SpritePreview.tsx'
+import { FormSelect } from './FormSelect.tsx'
 import { genderOptions, useAddPokemonForm } from './useAddPokemonForm.ts'
 import type { PokemonGender } from '../../pokemon.schema.ts'
 import styles from './AddPokemonModal.module.css'
@@ -77,6 +78,7 @@ export function AddPokemonModal({
             value={form.values.pokemonName}
             onChange={(event) => {
               form.setField('pokemonName', event.target.value)
+              form.setField('form', '')
             }}
             autoFocus
             autoComplete="off"
@@ -96,17 +98,13 @@ export function AddPokemonModal({
           />
         </label>
 
-        <label className={styles.field}>
-          {t('addPokemon.form')}
-          <input
-            className={styles.input}
-            value={form.values.form}
-            onChange={(event) => {
-              form.setField('form', event.target.value)
-            }}
-            autoComplete="off"
-          />
-        </label>
+        <FormSelect
+          name={form.values.pokemonName}
+          value={form.values.form}
+          onChange={(value) => {
+            form.setField('form', value)
+          }}
+        />
 
         <label className={styles.field}>
           {t('pokemon.gender')}

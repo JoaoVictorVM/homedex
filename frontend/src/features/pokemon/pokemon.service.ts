@@ -4,6 +4,7 @@ import { pokemonListSchema, pokemonSchema } from './pokemon.schema.ts'
 import type { Pokemon, PokemonGender } from './pokemon.schema.ts'
 
 const spriteSchema = z.object({ sprite: z.string() })
+const formsSchema = z.object({ forms: z.array(z.string()) })
 
 export type PokemonAttributes = {
   pokemonName: string
@@ -21,6 +22,20 @@ export type PokemonPosition = {
 
 function pokemonsPath(code: string): string {
   return `/collections/${encodeURIComponent(code)}/pokemons`
+}
+
+export async function fetchForms(
+  name: string,
+  signal?: AbortSignal,
+): Promise<string[]> {
+  const params = new URLSearchParams({ name })
+
+  const result = await request(`/pokemon-forms?${params.toString()}`, {
+    schema: formsSchema,
+    signal,
+  })
+
+  return result.forms
 }
 
 export async function fetchSprite(

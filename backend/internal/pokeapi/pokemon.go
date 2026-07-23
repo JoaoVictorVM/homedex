@@ -76,6 +76,66 @@ func (c *Client) Pokemon(ctx context.Context, rawName string) (Pokemon, error) {
 	return found, nil
 }
 
+func (c *Client) Forms(ctx context.Context, rawName string) ([]string, error) {
+	name, err := NormalizeName(rawName)
+	if err != nil {
+		return nil, err
+	}
+
+	if cached, ok := c.forms.get(name); ok {
+		return cached, nil
+	}
+
+	forms, err := c.varietyNames(ctx, name)
+	if err == nil {
+		c.forms.set(name, forms)
+		return forms, nil
+	}
+	if !errors.Is(err, ErrNotFound) {
+		return nil, err
+	}
+
+	found, err := c.Pokemon(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	single := []string{found.Name}
+	c.forms.set(name, single)
+
+	return single, nil
+}
+
+func (c *Client) varietyNames(ctx context.Context, name string) ([]string, error) {
+	var resp struct {
+		Varieties []struct {
+			IsDefault bool `json:"is_default"`
+			Pokemon   struct {
+				Name string `json:"name"`
+			} `json:"pokemon"`
+		} `json:"varieties"`
+	}
+
+	if err := c.Get(ctx, "pokemon-species/"+name, &resp); err != nil {
+		return nil, fmt.Errorf("buscar espécie %q: %w", name, err)
+	}
+
+	forms := make([]string, 0, len(resp.Varieties))
+	for _, variety := range resp.Varieties {
+		if variety.IsDefault {
+			forms = append([]string{variety.Pokemon.Name}, forms...)
+			continue
+		}
+		forms = append(forms, variety.Pokemon.Name)
+	}
+
+	if len(forms) == 0 {
+		return nil, ErrNotFound
+	}
+
+	return forms, nil
+}
+
 func (c *Client) defaultVariety(ctx context.Context, name string) (string, error) {
 	if cached, ok := c.varieties.get(name); ok {
 		return cached, nil

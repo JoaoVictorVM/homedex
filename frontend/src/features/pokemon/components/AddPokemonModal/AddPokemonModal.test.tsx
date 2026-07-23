@@ -30,6 +30,14 @@ function mockApi(
       if (url.includes('/games')) {
         return Promise.resolve(jsonResponse([firered, leafgreen]))
       }
+      if (url.includes('/pokemon-forms')) {
+        return Promise.resolve(jsonResponse({ forms: ['bulbasaur'] }))
+      }
+      if (url.includes('/sprite')) {
+        return Promise.resolve(
+          jsonResponse({ sprite: 'https://sprites/1.png' }),
+        )
+      }
       if (options?.method === 'POST') {
         return Promise.resolve(
           erro === undefined
@@ -68,7 +76,6 @@ describe('AddPokemonModal', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByLabelText(/pok.mon name/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/nickname/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^form/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/gender/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/shiny/i)).toBeInTheDocument()
 
