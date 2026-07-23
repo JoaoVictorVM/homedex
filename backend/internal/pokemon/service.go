@@ -32,6 +32,18 @@ func NewService(repo *Repository, collections collections, pokedex pokedex) *Ser
 	return &Service{repo: repo, collections: collections, pokedex: pokedex}
 }
 
+func (s *Service) ResolveSprite(ctx context.Context, name string, form string, shiny bool) (string, error) {
+	url, err := s.pokedex.Sprite(ctx, name, form, shiny)
+	if err != nil {
+		if errors.Is(err, pokeapi.ErrNoSprite) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return url, nil
+}
+
 func (s *Service) Create(ctx context.Context, rawCode string, novo NewPokemon) (Pokemon, error) {
 	owner, err := s.collections.Get(ctx, rawCode)
 	if err != nil {

@@ -77,6 +77,34 @@ func (h *Handler) Register(r chi.Router) {
 	r.Delete("/{pokemonID}", h.delete)
 }
 
+func (h *Handler) RegisterSprite(r chi.Router) {
+	r.Get("/", h.sprite)
+}
+
+func (h *Handler) sprite(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		httpjson.Error(w, http.StatusBadRequest, "informe o nome do pokémon")
+		return
+	}
+
+	form := r.URL.Query().Get("form")
+	shiny := r.URL.Query().Get("shiny") == "true"
+
+	url, err := h.service.ResolveSprite(r.Context(), name, form, shiny)
+	if err != nil {
+		if errors.Is(err, pokeapi.ErrNotFound) || errors.Is(err, pokeapi.ErrInvalidName) {
+			httpjson.Error(w, http.StatusNotFound, "pokémon não encontrado na PokéAPI")
+			return
+		}
+		slog.Error("resolver sprite", "erro", err)
+		httpjson.Error(w, http.StatusInternalServerError, "não foi possível buscar a sprite")
+		return
+	}
+
+	httpjson.Write(w, http.StatusOK, map[string]string{"sprite": url})
+}
+
 func (h *Handler) move(w http.ResponseWriter, r *http.Request) {
 	pokemonID, err := strconv.ParseInt(chi.URLParam(r, "pokemonID"), 10, 64)
 	if err != nil {

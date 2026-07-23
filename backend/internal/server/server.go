@@ -59,6 +59,7 @@ func New(cfg Config, db Pinger, handlers Handlers) *http.Server {
 	router.Route("/collections", handlers.Collections.Register)
 	router.Route("/collections/{code}/games", handlers.Games.Register)
 	router.Route("/collections/{code}/pokemons", handlers.Pokemons.Register)
+	router.Route("/sprite", handlers.Pokemons.RegisterSprite)
 
 	return &http.Server{
 		Addr:              ":" + cfg.Port,

@@ -7,6 +7,7 @@ import { useGames } from '../../../games/useGames.ts'
 import { useBoxPokemons } from '../../../box/useBoxPokemons.ts'
 import { firstFreeSlot } from '../../../box/freeSlot.ts'
 import { useAddPokemon } from '../../useAddPokemon.ts'
+import { SpritePreview } from './SpritePreview.tsx'
 import { genderOptions, useAddPokemonForm } from './useAddPokemonForm.ts'
 import type { PokemonGender } from '../../pokemon.schema.ts'
 import styles from './AddPokemonModal.module.css'
@@ -62,6 +63,12 @@ export function AddPokemonModal({
             {addPokemon.error.message}
           </p>
         )}
+
+        <SpritePreview
+          name={form.values.pokemonName}
+          form={form.values.form}
+          shiny={form.values.isShiny}
+        />
 
         <label className={styles.field}>
           {t('addPokemon.name')}

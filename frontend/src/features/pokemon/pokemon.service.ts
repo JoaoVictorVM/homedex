@@ -1,6 +1,9 @@
+import { z } from 'zod'
 import { request, requestEmpty } from '../../lib/api/client.ts'
 import { pokemonListSchema, pokemonSchema } from './pokemon.schema.ts'
 import type { Pokemon, PokemonGender } from './pokemon.schema.ts'
+
+const spriteSchema = z.object({ sprite: z.string() })
 
 export type PokemonAttributes = {
   pokemonName: string
@@ -18,6 +21,28 @@ export type PokemonPosition = {
 
 function pokemonsPath(code: string): string {
   return `/collections/${encodeURIComponent(code)}/pokemons`
+}
+
+export async function fetchSprite(
+  name: string,
+  form: string,
+  shiny: boolean,
+  signal?: AbortSignal,
+): Promise<string> {
+  const params = new URLSearchParams({ name })
+  if (form !== '') {
+    params.set('form', form)
+  }
+  if (shiny) {
+    params.set('shiny', 'true')
+  }
+
+  const result = await request(`/sprite?${params.toString()}`, {
+    schema: spriteSchema,
+    signal,
+  })
+
+  return result.sprite
 }
 
 export function fetchBox(

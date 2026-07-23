@@ -1,0 +1,25 @@
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: var(--size-sprite-detail);
+  height: var(--size-sprite-detail);
+  background-color: var(--color-gray-100);
+  border: var(--border-width-sm) solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+}
+
+.sprite {
+  width: var(--size-sprite-detail);
+  height: var(--size-sprite-detail);
+  object-fit: contain;
+}
+
+.message {
+  padding: var(--space-1);
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
