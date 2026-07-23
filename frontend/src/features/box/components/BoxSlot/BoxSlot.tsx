@@ -1,6 +1,9 @@
-import type { JSX } from 'react'
+import type { CSSProperties, JSX } from 'react'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
+import { CSS } from '@dnd-kit/utilities'
 import type { Pokemon } from '../../../pokemon/pokemon.schema.ts'
 import { spriteSlotSize } from '../../../../shared/spriteSizes.ts'
+import { slotId } from '../../dnd.ts'
 import styles from './BoxSlot.module.css'
 
 type BoxSlotProps = {
@@ -16,25 +19,46 @@ export function BoxSlot({
   isSelected = false,
   onSelect,
 }: BoxSlotProps): JSX.Element {
+  const id = slotId(slot)
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id })
+  const {
+    setNodeRef: setDragRef,
+    listeners,
+    attributes,
+    transform,
+    isDragging,
+  } = useDraggable({ id, disabled: pokemon === undefined })
+
   const classes = [
     styles.slot,
     pokemon?.isShiny === true ? styles.shiny : '',
     isSelected ? styles.selected : '',
+    isOver ? styles.over : '',
   ]
     .filter(Boolean)
     .join(' ')
 
+  const buttonStyle: CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    zIndex: isDragging ? 'var(--z-drag)' : undefined,
+    opacity: isDragging ? 0.85 : undefined,
+  }
+
   return (
-    <li className={classes} data-slot={slot}>
+    <li ref={setDropRef} className={classes} data-slot={slot}>
       {pokemon !== undefined && (
         <button
+          ref={setDragRef}
           className={styles.button}
           type="button"
+          style={buttonStyle}
           aria-label={displayName(pokemon)}
-          aria-pressed={isSelected}
+          aria-current={isSelected ? 'true' : undefined}
           onClick={() => {
             onSelect?.(slot)
           }}
+          {...listeners}
+          {...attributes}
         >
           {pokemon.sprite !== '' && (
             <img
@@ -45,6 +69,7 @@ export function BoxSlot({
               height={spriteSlotSize}
               loading="lazy"
               decoding="async"
+              draggable={false}
             />
           )}
         </button>

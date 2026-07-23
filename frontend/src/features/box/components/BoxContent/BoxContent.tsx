@@ -9,6 +9,7 @@ type BoxContentProps = {
   boxNumber: number
   selectedSlot?: number | null
   onSelect?: (slot: number) => void
+  onMove?: (from: number, to: number) => void
 }
 
 export function BoxContent({
@@ -16,6 +17,7 @@ export function BoxContent({
   boxNumber,
   selectedSlot = null,
   onSelect,
+  onMove,
 }: BoxContentProps): JSX.Element {
   const { t } = useI18n()
   const pokemons = useBoxPokemons(code, boxNumber)
@@ -41,6 +43,7 @@ export function BoxContent({
       pokemons={pokemons.data}
       selectedSlot={selectedSlot}
       onSelect={onSelect}
+      onMove={onMove}
     />
   )
 }

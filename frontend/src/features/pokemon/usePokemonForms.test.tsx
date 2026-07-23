@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { withProviders } from '../../test/renderWithProviders.tsx'
 import { usePokemonForms } from './usePokemonForms.ts'
 

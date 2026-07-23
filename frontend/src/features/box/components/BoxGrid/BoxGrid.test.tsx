@@ -96,8 +96,16 @@ describe('BoxGrid', () => {
     )
 
     expect(screen.getByRole('button', { name: 'bulbasaur' })).toHaveAttribute(
-      'aria-pressed',
+      'aria-current',
       'true',
     )
+  })
+
+  it('avisa um movimento entre slots', () => {
+    const onMove = vi.fn()
+    renderWithProviders(<BoxGrid pokemons={[pokemon()]} onMove={onMove} />)
+
+    expect(screen.getByRole('list')).toBeInTheDocument()
+    expect(onMove).not.toHaveBeenCalled()
   })
 })
