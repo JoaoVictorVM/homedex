@@ -40,6 +40,8 @@ export const ptBR = {
   'addPokemon.typeName': 'Digite o nome para ver a sprite',
   'addPokemon.spriteNotFound': 'Sprite não encontrada',
   'addPokemon.spritePreview': 'Prévia da sprite',
+  'addPokemon.noVisibleGames':
+    'Nenhum jogo visível. Reexiba um jogo no menu Jogos.',
   'common.no': 'Não',
   'pokemon.noneSelected': 'Selecione um Pokémon na box para ver os detalhes.',
   'pokemon.noSprite': 'Sem sprite',

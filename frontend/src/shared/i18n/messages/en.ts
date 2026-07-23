@@ -41,6 +41,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'addPokemon.typeName': 'Type a name to see the sprite',
   'addPokemon.spriteNotFound': 'Sprite not found',
   'addPokemon.spritePreview': 'Sprite preview',
+  'addPokemon.noVisibleGames':
+    'No visible games. Unhide a game in the Games menu.',
   'common.no': 'No',
   'pokemon.noneSelected': 'Select a Pokémon in the box to see its details.',
   'pokemon.noSprite': 'No sprite',

@@ -4,6 +4,7 @@ import { Button } from '../../../../shared/components/Button/Button.tsx'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import type { MessageKey } from '../../../../shared/i18n/messages/pt-BR.ts'
 import { useGames } from '../../../games/useGames.ts'
+import { visibleGames } from '../../../games/visibleGames.ts'
 import { useBoxPokemons } from '../../../box/useBoxPokemons.ts'
 import { firstFreeSlot } from '../../../box/freeSlot.ts'
 import { useAddPokemon } from '../../useAddPokemon.ts'
@@ -33,7 +34,8 @@ export function AddPokemonModal({
   const { t } = useI18n()
   const games = useGames(code)
   const pokemons = useBoxPokemons(code, boxNumber)
-  const firstGameId = games.data?.[0]?.id ?? 0
+  const selectableGames = visibleGames(games.data ?? [])
+  const firstGameId = selectableGames[0]?.id ?? 0
   const form = useAddPokemonForm(firstGameId)
   const addPokemon = useAddPokemon(code, boxNumber, onClose)
   const slot = firstFreeSlot(pokemons.data ?? [])
@@ -125,19 +127,23 @@ export function AddPokemonModal({
 
         <label className={styles.field}>
           {t('pokemon.game')}
-          <select
-            className={styles.select}
-            value={form.values.gameId}
-            onChange={(event) => {
-              form.setField('gameId', Number(event.target.value))
-            }}
-          >
-            {(games.data ?? []).map((game) => (
-              <option key={game.id} value={game.id}>
-                {game.name}
-              </option>
-            ))}
-          </select>
+          {selectableGames.length === 0 ? (
+            <p className={styles.hint}>{t('addPokemon.noVisibleGames')}</p>
+          ) : (
+            <select
+              className={styles.select}
+              value={form.values.gameId}
+              onChange={(event) => {
+                form.setField('gameId', Number(event.target.value))
+              }}
+            >
+              {selectableGames.map((game) => (
+                <option key={game.id} value={game.id}>
+                  {game.name}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
 
         <label className={styles.checkboxField}>

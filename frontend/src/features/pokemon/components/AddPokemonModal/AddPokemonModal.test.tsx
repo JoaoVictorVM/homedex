@@ -6,6 +6,7 @@ import { AddPokemonModal } from './AddPokemonModal.tsx'
 
 const firered = { id: 42, name: 'FireRed', isOfficial: true, visible: true }
 const leafgreen = { id: 43, name: 'LeafGreen', isOfficial: true, visible: true }
+const oculto = { id: 44, name: 'Emerald', isOfficial: true, visible: false }
 
 const criado = {
   id: 1,
@@ -28,7 +29,7 @@ function mockApi(
     'fetch',
     vi.fn((url: string, options?: RequestInit) => {
       if (url.includes('/games')) {
-        return Promise.resolve(jsonResponse([firered, leafgreen]))
+        return Promise.resolve(jsonResponse([firered, leafgreen, oculto]))
       }
       if (url.includes('/pokemon-forms')) {
         return Promise.resolve(jsonResponse({ forms: ['bulbasaur'] }))
@@ -84,6 +85,26 @@ describe('AddPokemonModal', () => {
         screen.getByRole('option', { name: 'FireRed' }),
       ).toBeInTheDocument()
     })
+  })
+
+  it('lista apenas os jogos visíveis no dropdown', async () => {
+    mockApi()
+    renderWithProviders(
+      <AddPokemonModal code="A7K9F2QX" boxNumber={1} onClose={vi.fn()} />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('option', { name: 'FireRed' }),
+      ).toBeInTheDocument()
+    })
+
+    expect(
+      screen.getByRole('option', { name: 'LeafGreen' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('option', { name: 'Emerald' }),
+    ).not.toBeInTheDocument()
   })
 
   it('só habilita o envio depois do nome', async () => {
