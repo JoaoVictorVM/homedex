@@ -6,6 +6,8 @@ export const ptBR = {
   'games.hackrom': 'HackRoms',
   'games.empty': 'Nenhum jogo aqui ainda.',
   'games.loadError': 'Não foi possível carregar os jogos.',
+  'games.hide': 'Ocultar do dropdown',
+  'games.show': 'Mostrar no dropdown',
   'entry.title': 'HomeDex',
   'entry.question': 'Você já tem uma coleção?',
   'entry.hasCode': 'Tenho um código',

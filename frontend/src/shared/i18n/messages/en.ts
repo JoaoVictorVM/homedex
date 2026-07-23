@@ -8,6 +8,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'games.hackrom': 'HackRoms',
   'games.empty': 'No games here yet.',
   'games.loadError': 'Could not load the games.',
+  'games.hide': 'Hide from dropdown',
+  'games.show': 'Show in dropdown',
   'entry.title': 'HomeDex',
   'entry.question': 'Do you already have a collection?',
   'entry.hasCode': 'I have a code',

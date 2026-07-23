@@ -17,3 +17,25 @@
 .hidden {
   color: var(--color-text-secondary);
 }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
+}
+
+.toggle:hover:not(:disabled) {
+  color: var(--color-accent-strong);
+}
+
+.toggle:disabled {
+  color: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+.toggleOff {
+  color: var(--color-text-secondary);
+}
