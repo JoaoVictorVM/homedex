@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { PokemonDetail } from './PokemonDetail.tsx'
@@ -123,5 +124,48 @@ describe('PokemonDetail', () => {
       expect(screen.getByText(/no sprite/i)).toBeInTheDocument()
     })
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('não mostra ações sem os callbacks', async () => {
+    mockApi()
+    renderWithProviders(
+      <PokemonDetail code="A7K9F2QX" boxNumber={1} slot={3} />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Ratinho' }),
+      ).toBeInTheDocument()
+    })
+    expect(
+      screen.queryByRole('button', { name: /edit/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('aciona editar e remover com o pokémon selecionado', async () => {
+    mockApi()
+    const onEdit = vi.fn()
+    const onRemove = vi.fn()
+    renderWithProviders(
+      <PokemonDetail
+        code="A7K9F2QX"
+        boxNumber={1}
+        slot={3}
+        onEdit={onEdit}
+        onRemove={onRemove}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Ratinho' }),
+      ).toBeInTheDocument()
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }))
+    await userEvent.click(screen.getByRole('button', { name: /remove/i }))
+
+    expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: 7 }))
+    expect(onRemove).toHaveBeenCalledWith(expect.objectContaining({ id: 7 }))
   })
 })

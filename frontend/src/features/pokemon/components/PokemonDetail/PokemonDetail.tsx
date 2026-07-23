@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import type { MessageKey } from '../../../../shared/i18n/messages/pt-BR.ts'
+import { Button } from '../../../../shared/components/Button/Button.tsx'
 import { useGames } from '../../../games/useGames.ts'
 import { useBoxPokemons } from '../../../box/useBoxPokemons.ts'
 import { spriteDetailSize } from '../../../../shared/spriteSizes.ts'
@@ -11,6 +12,8 @@ type PokemonDetailProps = {
   code: string
   boxNumber: number
   slot: number | null
+  onEdit?: (pokemon: Pokemon) => void
+  onRemove?: (pokemon: Pokemon) => void
 }
 
 const genderKeys: Readonly<Record<PokemonGender, MessageKey>> = {
@@ -29,6 +32,8 @@ export function PokemonDetail({
   code,
   boxNumber,
   slot,
+  onEdit,
+  onRemove,
 }: PokemonDetailProps): JSX.Element {
   const { t } = useI18n()
   const pokemons = useBoxPokemons(code, boxNumber)
@@ -93,6 +98,30 @@ export function PokemonDetail({
           <dd className={styles.value}>{gameName ?? '—'}</dd>
         </div>
       </dl>
+
+      {(onEdit !== undefined || onRemove !== undefined) && (
+        <div className={styles.actions}>
+          {onEdit !== undefined && (
+            <Button
+              onClick={() => {
+                onEdit(selected)
+              }}
+            >
+              {t('pokemon.edit')}
+            </Button>
+          )}
+          {onRemove !== undefined && (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                onRemove(selected)
+              }}
+            >
+              {t('pokemon.remove')}
+            </Button>
+          )}
+        </div>
+      )}
     </article>
   )
 }

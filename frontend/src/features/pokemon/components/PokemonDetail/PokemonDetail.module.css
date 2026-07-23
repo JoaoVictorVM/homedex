@@ -72,6 +72,13 @@
   color: var(--color-orange-700);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  justify-content: center;
+}
+
 .empty {
   display: flex;
   align-items: center;

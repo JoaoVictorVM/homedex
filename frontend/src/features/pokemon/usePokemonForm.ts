@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import type { PokemonAttributes } from '../../pokemon.service.ts'
-import type { PokemonGender } from '../../pokemon.schema.ts'
+import type { PokemonAttributes } from './pokemon.service.ts'
+import type { PokemonGender } from './pokemon.schema.ts'
 
 export type PokemonForm = {
   values: PokemonAttributes
@@ -9,10 +9,9 @@ export type PokemonForm = {
     field: K,
     value: PokemonAttributes[K],
   ) => void
-  reset: () => void
 }
 
-function emptyForm(gameId: number): PokemonAttributes {
+export function emptyAttributes(gameId: number): PokemonAttributes {
   return {
     pokemonName: '',
     nickname: '',
@@ -23,10 +22,11 @@ function emptyForm(gameId: number): PokemonAttributes {
   }
 }
 
-export function useAddPokemonForm(defaultGameId: number): PokemonForm {
-  const [values, setValues] = useState<PokemonAttributes>(() =>
-    emptyForm(defaultGameId),
-  )
+export function usePokemonForm(
+  initial: PokemonAttributes,
+  fallbackGameId: number,
+): PokemonForm {
+  const [values, setValues] = useState<PokemonAttributes>(initial)
 
   const setField = useCallback(
     <K extends keyof PokemonAttributes>(
@@ -38,17 +38,12 @@ export function useAddPokemonForm(defaultGameId: number): PokemonForm {
     [],
   )
 
-  const reset = useCallback(() => {
-    setValues(emptyForm(defaultGameId))
-  }, [defaultGameId])
-
-  const gameId = values.gameId > 0 ? values.gameId : defaultGameId
+  const gameId = values.gameId > 0 ? values.gameId : fallbackGameId
 
   return {
     values: { ...values, gameId },
     canSubmit: values.pokemonName.trim() !== '' && gameId > 0,
     setField,
-    reset,
   }
 }
 
