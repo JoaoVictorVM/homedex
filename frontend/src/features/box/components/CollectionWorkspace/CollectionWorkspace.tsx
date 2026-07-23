@@ -6,6 +6,7 @@ import { BoxNavigator } from '../BoxNavigator/BoxNavigator.tsx'
 import { PokemonDetail } from '../../../pokemon/components/PokemonDetail/PokemonDetail.tsx'
 import { AddPokemonModal } from '../../../pokemon/components/AddPokemonModal/AddPokemonModal.tsx'
 import { EditPokemonModal } from '../../../pokemon/components/EditPokemonModal/EditPokemonModal.tsx'
+import { GamesModal } from '../../../games/components/GamesModal/GamesModal.tsx'
 import { ConfirmDialog } from '../../../../shared/components/ConfirmDialog/ConfirmDialog.tsx'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import { useAddBox } from '../../../collection/useAddBox.ts'
@@ -27,6 +28,7 @@ export function CollectionWorkspace({
   const [boxNumber, setBoxNumber] = useState(1)
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [isGamesOpen, setIsGamesOpen] = useState(false)
   const [editing, setEditing] = useState<Pokemon | null>(null)
   const [removing, setRemoving] = useState<Pokemon | null>(null)
 
@@ -48,6 +50,9 @@ export function CollectionWorkspace({
         onLeave={onLeave}
         onAddPokemon={() => {
           setIsAdding(true)
+        }}
+        onOpenGames={() => {
+          setIsGamesOpen(true)
         }}
         detail={
           <PokemonDetail
@@ -85,6 +90,15 @@ export function CollectionWorkspace({
           boxNumber={boxNumber}
           onClose={() => {
             setIsAdding(false)
+          }}
+        />
+      )}
+
+      {isGamesOpen && (
+        <GamesModal
+          code={code}
+          onClose={() => {
+            setIsGamesOpen(false)
           }}
         />
       )}

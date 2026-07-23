@@ -1,0 +1,19 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-panel);
+  border: var(--border-width-sm) solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+}
+
+.name {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-primary);
+}
+
+.hidden {
+  color: var(--color-text-secondary);
+}
