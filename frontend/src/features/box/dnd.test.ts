@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSlotId, resolveDrop, slotId } from './dnd.ts'
+import { neighborSlot, parseSlotId, resolveDrop, slotId } from './dnd.ts'
 import type { DropEvent } from './dnd.ts'
 
 function dragEnd(activeId: string, overId: string | null): DropEvent {
@@ -38,5 +38,28 @@ describe('resolveDrop', () => {
 
   it('ignora identificadores inesperados', () => {
     expect(resolveDrop(dragEnd('lixo', 'slot-1'))).toBeNull()
+  })
+})
+
+describe('neighborSlot', () => {
+  it('anda pela grade 6x5 com as setas', () => {
+    expect(neighborSlot(7, 'ArrowRight')).toBe(8)
+    expect(neighborSlot(7, 'ArrowLeft')).toBe(6)
+    expect(neighborSlot(7, 'ArrowDown')).toBe(13)
+    expect(neighborSlot(7, 'ArrowUp')).toBe(1)
+  })
+
+  it('não sai da linha ao chegar nas bordas laterais', () => {
+    expect(neighborSlot(5, 'ArrowRight')).toBeNull()
+    expect(neighborSlot(6, 'ArrowLeft')).toBeNull()
+  })
+
+  it('não sai da grade em cima ou embaixo', () => {
+    expect(neighborSlot(2, 'ArrowUp')).toBeNull()
+    expect(neighborSlot(27, 'ArrowDown')).toBeNull()
+  })
+
+  it('ignora teclas que não são setas', () => {
+    expect(neighborSlot(7, 'Enter')).toBeNull()
   })
 })
