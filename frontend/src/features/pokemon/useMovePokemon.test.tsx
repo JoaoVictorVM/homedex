@@ -62,6 +62,25 @@ describe('useMovePokemon', () => {
     )
   })
 
+  it('trata o swap (dois pokémon afetados) como sucesso', async () => {
+    mockFetch([
+      { ...movido, id: 7, slot: 1 },
+      { ...movido, id: 8, pokemonName: 'charmander', slot: 0 },
+    ])
+
+    const { result } = renderHook(() => useMovePokemon('A7K9F2QX', 1), {
+      wrapper,
+    })
+
+    result.current.mutate({ pokemonId: 7, slot: 1 })
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    expect(result.current.data).toHaveLength(2)
+  })
+
   it('expõe erro de posição', async () => {
     mockFetch({ error: 'box ou slot fora dos limites da coleção' }, 400)
 
