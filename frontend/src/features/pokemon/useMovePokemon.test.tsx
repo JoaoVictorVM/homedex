@@ -104,6 +104,24 @@ describe('useMovePokemon', () => {
 
     expect(slotById(client.getQueryData(key))).toEqual({ 7: 0 })
   })
+
+  it('avisa a falha da persistência em segundo plano', async () => {
+    mockFetch({ error: 'falhou' }, 400)
+    const client = testQueryClient()
+    client.setQueryData(boxKeys.list('A7K9F2QX', 1), [pokemon(7, 0)])
+    const onFailure = vi.fn()
+
+    const { result } = renderHook(
+      () => useMovePokemon('A7K9F2QX', 1, onFailure),
+      { wrapper: ({ children }) => withProviders(children, client) },
+    )
+
+    result.current.mutate({ pokemonId: 7, slot: 5 })
+
+    await waitFor(() => {
+      expect(onFailure).toHaveBeenCalledOnce()
+    })
+  })
 })
 
 function wrapper({ children }: { children: ReactNode }): JSX.Element {

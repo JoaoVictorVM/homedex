@@ -41,6 +41,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'box.addBox': 'New box',
   'box.addBoxError': 'Could not add the box.',
   'box.loadError': 'Could not load the Pokémon in this box.',
+  'box.moveError': 'Could not move the Pokémon. Try again.',
   'box.boxArea': 'Current box',
   'common.yes': 'Yes',
   'common.close': 'Close',

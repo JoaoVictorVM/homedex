@@ -40,6 +40,7 @@ export const ptBR = {
   'box.addBox': 'Nova box',
   'box.addBoxError': 'Não foi possível adicionar a box.',
   'box.loadError': 'Não foi possível carregar os Pokémon desta box.',
+  'box.moveError': 'Não foi possível mover o Pokémon. Tente de novo.',
   'box.boxArea': 'Box atual',
   'common.yes': 'Sim',
   'common.close': 'Fechar',

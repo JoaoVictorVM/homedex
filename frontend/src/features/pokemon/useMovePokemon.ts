@@ -17,6 +17,7 @@ type MoveContext = {
 export function useMovePokemon(
   code: string,
   boxNumber: number,
+  onFailure?: () => void,
 ): UseMutationResult<Pokemon[], Error, MoveInput, MoveContext> {
   const queryClient = useQueryClient()
   const queryKey = boxKeys.list(code, boxNumber)
@@ -39,6 +40,7 @@ export function useMovePokemon(
       if (context?.previous !== undefined) {
         queryClient.setQueryData(queryKey, context.previous)
       }
+      onFailure?.()
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey })
