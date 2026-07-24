@@ -1,20 +1,27 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { JSX, ReactNode } from 'react'
-import { withProviders } from '../../test/renderWithProviders.tsx'
+import {
+  testQueryClient,
+  withProviders,
+} from '../../test/renderWithProviders.tsx'
+import { boxKeys } from '../box/useBoxPokemons.ts'
 import { useMovePokemon } from './useMovePokemon.ts'
+import type { Pokemon } from './pokemon.schema.ts'
 
-const movido = {
-  id: 7,
-  pokemonName: 'bulbasaur',
-  nickname: '',
-  isShiny: false,
-  gender: 'male',
-  form: '',
-  gameId: 1,
-  boxNumber: 1,
-  slot: 8,
-  sprite: 'https://sprites/1.png',
+function pokemon(id: number, slot: number, name = 'bulbasaur'): Pokemon {
+  return {
+    id,
+    pokemonName: name,
+    nickname: '',
+    isShiny: false,
+    gender: 'male',
+    form: '',
+    gameId: 1,
+    boxNumber: 1,
+    slot,
+    sprite: 'https://sprites/1.png',
+  }
 }
 
 function mockFetch(body: unknown, status = 200): void {
@@ -31,8 +38,8 @@ function mockFetch(body: unknown, status = 200): void {
   )
 }
 
-function wrapper({ children }: { children: ReactNode }): JSX.Element {
-  return withProviders(children)
+function slotById(list: Pokemon[] | undefined): Record<number, number> {
+  return Object.fromEntries((list ?? []).map((p) => [p.id, p.slot]))
 }
 
 describe('useMovePokemon', () => {
@@ -41,7 +48,7 @@ describe('useMovePokemon', () => {
   })
 
   it('envia a nova posição do pokémon arrastado', async () => {
-    mockFetch([movido])
+    mockFetch([pokemon(7, 8)])
 
     const { result } = renderHook(() => useMovePokemon('A7K9F2QX', 1), {
       wrapper,
@@ -62,30 +69,31 @@ describe('useMovePokemon', () => {
     )
   })
 
-  it('trata o swap (dois pokémon afetados) como sucesso', async () => {
-    mockFetch([
-      { ...movido, id: 7, slot: 1 },
-      { ...movido, id: 8, pokemonName: 'charmander', slot: 0 },
-    ])
+  it('atualiza a box na hora, antes da resposta (optimistic)', async () => {
+    mockFetch([pokemon(7, 5), pokemon(8, 0, 'charmander')])
+    const client = testQueryClient()
+    const key = boxKeys.list('A7K9F2QX', 1)
+    client.setQueryData(key, [pokemon(7, 0), pokemon(8, 5, 'charmander')])
 
     const { result } = renderHook(() => useMovePokemon('A7K9F2QX', 1), {
-      wrapper,
+      wrapper: ({ children }) => withProviders(children, client),
     })
 
-    result.current.mutate({ pokemonId: 7, slot: 1 })
+    result.current.mutate({ pokemonId: 7, slot: 5 })
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true)
+      expect(slotById(client.getQueryData(key))).toEqual({ 7: 5, 8: 0 })
     })
-
-    expect(result.current.data).toHaveLength(2)
   })
 
-  it('expõe erro de posição', async () => {
+  it('desfaz a mudança quando o servidor rejeita', async () => {
     mockFetch({ error: 'box ou slot fora dos limites da coleção' }, 400)
+    const client = testQueryClient()
+    const key = boxKeys.list('A7K9F2QX', 1)
+    client.setQueryData(key, [pokemon(7, 0)])
 
     const { result } = renderHook(() => useMovePokemon('A7K9F2QX', 1), {
-      wrapper,
+      wrapper: ({ children }) => withProviders(children, client),
     })
 
     result.current.mutate({ pokemonId: 7, slot: 40 })
@@ -93,5 +101,11 @@ describe('useMovePokemon', () => {
     await waitFor(() => {
       expect(result.current.isError).toBe(true)
     })
+
+    expect(slotById(client.getQueryData(key))).toEqual({ 7: 0 })
   })
 })
+
+function wrapper({ children }: { children: ReactNode }): JSX.Element {
+  return withProviders(children)
+}
