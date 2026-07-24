@@ -43,6 +43,10 @@ export const ptBR = {
   'box.moveError': 'Não foi possível mover o Pokémon. Tente de novo.',
   'box.boxArea': 'Box atual',
   'common.yes': 'Sim',
+  'error.title': 'Algo deu errado',
+  'error.message':
+    'Ocorreu um erro inesperado na interface. Recarregue a página para continuar.',
+  'error.reload': 'Recarregar',
   'common.close': 'Fechar',
   'common.cancel': 'Cancelar',
   'addPokemon.title': 'Adicionar Pokémon',

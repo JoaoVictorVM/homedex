@@ -44,6 +44,10 @@ export const en: Readonly<Record<MessageKey, string>> = {
   'box.moveError': 'Could not move the Pokémon. Try again.',
   'box.boxArea': 'Current box',
   'common.yes': 'Yes',
+  'error.title': 'Something went wrong',
+  'error.message':
+    'An unexpected error occurred in the interface. Reload the page to continue.',
+  'error.reload': 'Reload',
   'common.close': 'Close',
   'common.cancel': 'Cancel',
   'addPokemon.title': 'Add Pokémon',

@@ -6,6 +6,7 @@ import './styles/global.css'
 import { App } from './App.tsx'
 import { I18nProvider } from './shared/i18n/I18nProvider.tsx'
 import { QueryProvider } from './lib/QueryProvider.tsx'
+import { ErrorBoundary } from './shared/components/ErrorBoundary/ErrorBoundary.tsx'
 
 const rootElement = document.getElementById('root')
 
@@ -16,9 +17,11 @@ if (rootElement === null) {
 createRoot(rootElement).render(
   <StrictMode>
     <I18nProvider>
-      <QueryProvider>
-        <App />
-      </QueryProvider>
+      <ErrorBoundary>
+        <QueryProvider>
+          <App />
+        </QueryProvider>
+      </ErrorBoundary>
     </I18nProvider>
   </StrictMode>,
 )
