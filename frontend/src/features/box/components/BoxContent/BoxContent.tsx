@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { BoxGrid } from '../BoxGrid/BoxGrid.tsx'
 import { useBoxPokemons } from '../../useBoxPokemons.ts'
+import { useMovePokemon } from '../../../pokemon/useMovePokemon.ts'
 import { useI18n } from '../../../../shared/i18n/useI18n.ts'
 import styles from './BoxContent.module.css'
 
@@ -9,7 +10,6 @@ type BoxContentProps = {
   boxNumber: number
   selectedSlot?: number | null
   onSelect?: (slot: number) => void
-  onMove?: (from: number, to: number) => void
 }
 
 export function BoxContent({
@@ -17,10 +17,20 @@ export function BoxContent({
   boxNumber,
   selectedSlot = null,
   onSelect,
-  onMove,
 }: BoxContentProps): JSX.Element {
   const { t } = useI18n()
   const pokemons = useBoxPokemons(code, boxNumber)
+  const move = useMovePokemon(code, boxNumber)
+
+  function handleMove(from: number, to: number): void {
+    const dragged = pokemons.data?.find((pokemon) => pokemon.slot === from)
+
+    if (dragged === undefined) {
+      return
+    }
+
+    move.mutate({ pokemonId: dragged.id, slot: to })
+  }
 
   if (pokemons.isLoading) {
     return (
@@ -43,7 +53,7 @@ export function BoxContent({
       pokemons={pokemons.data}
       selectedSlot={selectedSlot}
       onSelect={onSelect}
-      onMove={onMove}
+      onMove={handleMove}
     />
   )
 }
