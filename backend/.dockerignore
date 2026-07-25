@@ -1,0 +1,7 @@
+Dockerfile
+.dockerignore
+.golangci.yml
+*.exe
+*.test
+coverage.out
+bin/
