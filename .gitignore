@@ -14,5 +14,4 @@ Thumbs.db
 *.log
 
 CLAUDE.md
-FASES.md
-PRD.md
+/docs/dev
