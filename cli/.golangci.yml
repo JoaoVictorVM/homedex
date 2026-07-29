@@ -17,6 +17,7 @@ linters:
     misspell:
       ignore-rules:
         - comando
+        - comandos
     revive:
       rules:
         - name: package-comments

@@ -8,17 +8,17 @@ import (
 	"github.com/JoaoVictorVM/homedex/cli/internal/config"
 )
 
-const usageText = `homedex - HomeDex terminal companion
+const usageText = `homedex - companheiro de terminal do HomeDex
 
-Usage:
-  homedex <command>
+Uso:
+  homedex <comando>
 
-Commands:
-  config   Show the HomeDex API base URL currently in use
-  help     Show this message
+Comandos:
+  config   Mostra a URL base da API HomeDex em uso
+  help     Mostra esta mensagem
 
-Environment:
-  HOMEDEX_API_URL   Overrides the HomeDex API base URL (defaults to production)
+Ambiente:
+  HOMEDEX_API_URL   Sobrescreve a URL base da API (padrão: produção)
 `
 
 func main() {
@@ -36,7 +36,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "config":
 		return write(stdout, config.Resolve()+"\n", 0)
 	default:
-		return write(stderr, fmt.Sprintf("unknown command: %q\n\n%s", args[0], usageText), 2)
+		return write(stderr, fmt.Sprintf("comando desconhecido: %q\n\n%s", args[0], usageText), 2)
 	}
 }
 

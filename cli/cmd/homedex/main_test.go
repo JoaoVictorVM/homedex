@@ -14,7 +14,7 @@ func TestRunSemArgumentosMostraUso(t *testing.T) {
 	if code := run(nil, &stdout, &stderr); code != 0 {
 		t.Fatalf("run() = %d, esperado 0", code)
 	}
-	if !strings.Contains(stdout.String(), "Usage:") {
+	if !strings.Contains(stdout.String(), "Uso:") {
 		t.Errorf("stdout não contém o texto de uso: %q", stdout.String())
 	}
 	if stderr.Len() != 0 {
@@ -41,7 +41,7 @@ func TestRunComandoDesconhecido(t *testing.T) {
 	if code := run([]string{"inexistente"}, &stdout, &stderr); code != 2 {
 		t.Fatalf("run() = %d, esperado 2", code)
 	}
-	if !strings.Contains(stderr.String(), "unknown command") {
+	if !strings.Contains(stderr.String(), "comando desconhecido") {
 		t.Errorf("stderr não explica o comando desconhecido: %q", stderr.String())
 	}
 	if stdout.Len() != 0 {
