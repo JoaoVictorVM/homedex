@@ -3,6 +3,7 @@
 .env.*.local
 
 backend/bin/
+/bin/
 *.exe
 *.test
 coverage.out
