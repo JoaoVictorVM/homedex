@@ -1,0 +1,92 @@
+version: "3"
+
+dotenv: [".env"]
+
+vars:
+  CLI_BIN: '{{if eq OS "windows"}}homedex.exe{{else}}homedex{{end}}'
+  LOCAL_DATABASE_URL: postgres://postgres:postgres@localhost:5432/homedex?sslmode=disable
+
+tasks:
+  default:
+    desc: Lista as tarefas disponíveis
+    cmds:
+      - task --list
+    silent: true
+
+  dev:
+    desc: Sobe frontend e backend locais
+    deps: [dev:frontend, dev:backend]
+
+  dev:frontend:
+    desc: Sobe o frontend (Vite)
+    dir: frontend
+    cmds:
+      - pnpm dev
+
+  dev:backend:
+    desc: Sobe o backend (Go)
+    dir: backend
+    env:
+      DATABASE_URL: '{{.DATABASE_URL | default .LOCAL_DATABASE_URL}}'
+    cmds:
+      - go run ./cmd/server
+
+  test:frontend:
+    desc: Roda os testes do frontend
+    dir: frontend
+    cmds:
+      - pnpm test
+
+  test:backend:
+    desc: Roda os testes do backend
+    dir: backend
+    cmds:
+      - go test ./...
+
+  test:cli:
+    desc: Roda os testes da CLI
+    dir: cli
+    cmds:
+      - go test ./...
+
+  lint:frontend:
+    desc: Roda o linter do frontend
+    dir: frontend
+    cmds:
+      - pnpm lint
+
+  lint:backend:
+    desc: Roda os linters do backend
+    dir: backend
+    cmds:
+      - golangci-lint run ./...
+
+  lint:cli:
+    desc: Roda os linters da CLI
+    dir: cli
+    cmds:
+      - golangci-lint run ./...
+
+  migrate:
+    desc: Aplica as migrations no banco apontado por DATABASE_URL
+    dir: backend
+    env:
+      DATABASE_URL: '{{.DATABASE_URL | default .LOCAL_DATABASE_URL}}'
+    cmds:
+      - go run ./cmd/migrate
+
+  build:cli:
+    desc: Compila a CLI em bin/
+    dir: cli
+    cmds:
+      - go build -o ../bin/{{.CLI_BIN}} ./cmd/homedex
+
+  docker:up:
+    desc: Sobe backend e Postgres via Docker Compose
+    cmds:
+      - docker compose up -d --build
+
+  docker:down:
+    desc: Derruba os serviços do Docker Compose
+    cmds:
+      - docker compose down
