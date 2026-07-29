@@ -99,7 +99,7 @@ A aplicação usa dois serviços no Render e um banco no Neon, todos no plano gr
 | Serviço          | Onde   | Tipo                  | Origem |
 | ---------------- | ------ | --------------------- | ------ |
 | `homedex-db`     | Neon   | PostgreSQL gerenciado | — |
-| `homedex-api`    | Render | Web Service (Docker)  | `backend/Dockerfile` |
+| `homedex-server` | Render | Web Service (Docker)  | `backend/Dockerfile` |
 | `homedex-web`    | Render | Static Site           | `frontend/` |
 
 O banco fica no Neon porque o PostgreSQL gratuito do Render expira após 90 dias — veja [ADR 0001](docs/adr/0001-banco-de-dados-no-neon.md).
@@ -131,7 +131,7 @@ As tabelas são criadas sozinhas: o backend roda as migrations ao subir.
 - **Root Directory**: `frontend`
 - **Build Command**: `pnpm install --frozen-lockfile && pnpm build`
 - **Publish Directory**: `dist`
-- Variável de ambiente: `VITE_API_URL` = URL do Web Service (ex: `https://homedex-api.onrender.com`)
+- Variável de ambiente: `VITE_API_URL` = URL do Web Service (ex: `https://homedex-server.onrender.com`)
 
 ### Ordem e dependência circular
 
