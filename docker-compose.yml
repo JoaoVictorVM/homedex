@@ -2,7 +2,7 @@ name: homedex
 
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -10,7 +10,9 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - homedex_pgdata:/var/lib/postgresql/data
+      # Postgres 18+ guarda o PGDATA em /var/lib/postgresql/<major>/docker; montar o volume em
+      # /var/lib/postgresql/data (o caminho usado até o 17) faz o container recusar a subir.
+      - homedex_pgdata:/var/lib/postgresql
     healthcheck:
       test:
         [
