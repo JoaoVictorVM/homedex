@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "include-component-in-tag": false,
+  "bootstrap-sha": "3b52e0868aa62644d1525e18247b25cf1f5c23ef",
+  "changelog-sections": [
+    { "type": "feat", "section": "Funcionalidades" },
+    { "type": "fix", "section": "Correções" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "refactor", "section": "Refatorações" },
+    { "type": "docs", "section": "Documentação" },
+    { "type": "test", "section": "Testes" },
+    { "type": "build", "section": "Build" },
+    { "type": "ci", "section": "Integração contínua" },
+    { "type": "chore", "section": "Manutenção" },
+    { "type": "revert", "section": "Revertidos" },
+    { "type": "style", "section": "Estilo", "hidden": true }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "homedex",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
