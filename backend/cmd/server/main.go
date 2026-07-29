@@ -20,6 +20,11 @@ import (
 	"github.com/JoaoVictorVM/homedex/backend/internal/server"
 )
 
+const (
+	bootTimeout     = 30 * time.Second
+	shutdownTimeout = 10 * time.Second
+)
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -44,7 +49,7 @@ func run() error {
 
 	trustProxy := os.Getenv("TRUST_PROXY") == "true"
 
-	bootCtx, cancelBoot := context.WithTimeout(context.Background(), 10*time.Second)
+	bootCtx, cancelBoot := context.WithTimeout(context.Background(), bootTimeout)
 	defer cancelBoot()
 
 	pool, err := database.Connect(bootCtx, databaseURL)
@@ -95,7 +100,7 @@ func run() error {
 			return fmt.Errorf("servidor http: %w", err)
 		}
 	case <-ctx.Done():
-		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancelShutdown()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {

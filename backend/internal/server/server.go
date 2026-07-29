@@ -55,7 +55,8 @@ func New(cfg Config, db Pinger, handlers Handlers) *http.Server {
 		httprate.WithLimitHandler(handleRateLimited),
 	))
 
-	router.Get("/health", handleHealth(db))
+	router.Get("/health", handleLiveness())
+	router.Get("/health/db", handleDatabaseHealth(db))
 	router.Route("/collections", handlers.Collections.Register)
 	router.Route("/collections/{code}/games", handlers.Games.Register)
 	router.Route("/collections/{code}/pokemons", handlers.Pokemons.Register)
