@@ -28,6 +28,18 @@ Frontend e backend são aplicações independentes que se comunicam apenas por H
 - [golangci-lint](https://golangci-lint.run/) v2
 - PostgreSQL (necessário a partir da fase de banco de dados)
 
+## Setup do repositório
+
+Na raiz, uma vez por clone:
+
+```sh
+pnpm install
+```
+
+Isso instala o [lefthook](https://lefthook.dev) e o [commitlint](https://commitlint.js.org) e registra o hook `commit-msg`, que valida a mensagem de cada commit no formato Conventional Commits (`tipo(escopo): descrição`, com escopo opcional limitado a `frontend`, `backend` e `cli`). Mensagem fora do padrão é rejeitada antes de o commit existir, apontando qual regra falhou.
+
+Se os hooks não estiverem ativos (clone antigo, `.git/hooks` limpo), rode `pnpm exec lefthook install`.
+
 ## Frontend
 
 ```sh
