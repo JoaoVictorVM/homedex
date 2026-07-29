@@ -143,3 +143,17 @@ O backend precisa da URL do frontend (CORS) e o frontend precisa da URL do backe
 - O compute do Neon **suspende após 5 minutos** sem atividade e religa em milissegundos na consulta seguinte. O pool de conexões descarta conexões ociosas antes disso (`backend/internal/database/database.go`), então a suspensão é transparente.
 - O plano gratuito do Neon dá 0,5 GB de armazenamento e **100 CU-hours/mês** (~400 h a 0,25 CU, contra ~730 h de mês corrido). Por isso `/health` é uma checagem rasa que **não** toca no banco: um monitor externo apontado para ela mantém o Render acordado sem impedir o Neon de suspender. Para verificar o banco use `/health/db`, sem monitoramento contínuo.
 - O banco do Neon **não expira** por inatividade.
+
+## Versionamento e releases
+
+A versão do projeto é calculada automaticamente pelo [release-please](https://github.com/googleapis/release-please) a partir das mensagens de commit em `main` — `feat` sobe a minor, `fix` sobe a patch, `feat!` ou `BREAKING CHANGE` sobem a major.
+
+O fluxo é:
+
+1. Commits em `main` disparam o workflow `.github/workflows/release-please.yml`.
+2. O release-please abre (ou atualiza) um pull request de release com o `CHANGELOG.md` e a versão atualizados.
+3. Ao mergear esse pull request, a tag `vX.Y.Z` é criada.
+
+**Nunca edite `CHANGELOG.md`, `version.txt` ou `.release-please-manifest.json` à mão** — os três são gerados pela automação.
+
+O workflow usa o segredo `RELEASE_PLEASE_TOKEN` (Personal Access Token com escrita em `contents` e `pull requests`), caindo no `GITHUB_TOKEN` padrão quando ele não existe. O motivo está no [ADR 0003](docs/adr/0003-token-do-release-please.md): tags criadas com o `GITHUB_TOKEN` não disparam outros workflows, o que impediria a publicação automática dos binários da CLI.
