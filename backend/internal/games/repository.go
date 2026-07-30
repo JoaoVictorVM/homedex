@@ -26,7 +26,7 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 
 func (r *Repository) ListByCollection(ctx context.Context, collectionID int64) ([]Game, error) {
 	rows, err := r.pool.Query(ctx,
-		`SELECT id, name, is_official, visible
+		`SELECT id, name, is_official, is_system, visible
 		 FROM games
 		 WHERE collection_id = $1
 		 ORDER BY is_official DESC, id`,
@@ -40,7 +40,7 @@ func (r *Repository) ListByCollection(ctx context.Context, collectionID int64) (
 	found := make([]Game, 0)
 	for rows.Next() {
 		var game Game
-		if err := rows.Scan(&game.ID, &game.Name, &game.IsOfficial, &game.Visible); err != nil {
+		if err := rows.Scan(&game.ID, &game.Name, &game.IsOfficial, &game.IsSystem, &game.Visible); err != nil {
 			return nil, fmt.Errorf("ler jogo da coleção: %w", err)
 		}
 		found = append(found, game)
@@ -59,9 +59,9 @@ func (r *Repository) Insert(ctx context.Context, collectionID int64, name string
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO games (collection_id, name, is_official)
 		 VALUES ($1, $2, false)
-		 RETURNING id, name, is_official, visible`,
+		 RETURNING id, name, is_official, is_system, visible`,
 		collectionID, name,
-	).Scan(&created.ID, &created.Name, &created.IsOfficial, &created.Visible)
+	).Scan(&created.ID, &created.Name, &created.IsOfficial, &created.IsSystem, &created.Visible)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode {
@@ -78,10 +78,10 @@ func (r *Repository) UpdateName(ctx context.Context, collectionID int64, gameID 
 
 	err := r.pool.QueryRow(ctx,
 		`UPDATE games SET name = $3
-		 WHERE id = $2 AND collection_id = $1 AND NOT is_official
-		 RETURNING id, name, is_official, visible`,
+		 WHERE id = $2 AND collection_id = $1 AND NOT is_official AND NOT is_system
+		 RETURNING id, name, is_official, is_system, visible`,
 		collectionID, gameID, name,
-	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.Visible)
+	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.IsSystem, &updated.Visible)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return Game{}, r.rejectionReason(ctx, collectionID, gameID)
@@ -101,13 +101,13 @@ func (r *Repository) UpdateVisibility(ctx context.Context, collectionID int64, g
 
 	err := r.pool.QueryRow(ctx,
 		`UPDATE games SET visible = $3
-		 WHERE id = $2 AND collection_id = $1
-		 RETURNING id, name, is_official, visible`,
+		 WHERE id = $2 AND collection_id = $1 AND NOT is_system
+		 RETURNING id, name, is_official, is_system, visible`,
 		collectionID, gameID, visible,
-	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.Visible)
+	).Scan(&updated.ID, &updated.Name, &updated.IsOfficial, &updated.IsSystem, &updated.Visible)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return Game{}, ErrNotFound
+			return Game{}, r.rejectionReason(ctx, collectionID, gameID)
 		}
 		return Game{}, fmt.Errorf("atualizar visibilidade do jogo: %w", err)
 	}
@@ -117,7 +117,7 @@ func (r *Repository) UpdateVisibility(ctx context.Context, collectionID int64, g
 
 func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int64) error {
 	tag, err := r.pool.Exec(ctx,
-		`DELETE FROM games WHERE id = $2 AND collection_id = $1 AND NOT is_official`,
+		`DELETE FROM games WHERE id = $2 AND collection_id = $1 AND NOT is_official AND NOT is_system`,
 		collectionID, gameID,
 	)
 	if err != nil {
@@ -138,11 +138,12 @@ func (r *Repository) Delete(ctx context.Context, collectionID int64, gameID int6
 
 func (r *Repository) rejectionReason(ctx context.Context, collectionID int64, gameID int64) error {
 	var isOfficial bool
+	var isSystem bool
 
 	err := r.pool.QueryRow(ctx,
-		`SELECT is_official FROM games WHERE id = $2 AND collection_id = $1`,
+		`SELECT is_official, is_system FROM games WHERE id = $2 AND collection_id = $1`,
 		collectionID, gameID,
-	).Scan(&isOfficial)
+	).Scan(&isOfficial, &isSystem)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrNotFound
@@ -150,6 +151,9 @@ func (r *Repository) rejectionReason(ctx context.Context, collectionID int64, ga
 		return fmt.Errorf("consultar jogo: %w", err)
 	}
 
+	if isSystem {
+		return ErrSystem
+	}
 	if isOfficial {
 		return ErrOfficial
 	}
