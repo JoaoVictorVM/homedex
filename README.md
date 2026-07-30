@@ -94,6 +94,26 @@ As migrations são aplicadas automaticamente na subida do servidor.
 | `golangci-lint run ./...`   | linters              |
 | `golangci-lint fmt`         | formatação (gofmt + goimports) |
 
+## CLI
+
+Companheiro de terminal do HomeDex, distribuído como módulo Go próprio:
+
+```sh
+go install github.com/JoaoVictorVM/homedex/cli/cmd/homedex@latest
+```
+
+Ou baixe o binário pronto na [última release](https://github.com/JoaoVictorVM/homedex/releases) — sem precisar de Go instalado.
+
+| Comando          | Descrição |
+| ---------------- | --------- |
+| `homedex roll`   | Sorteia um Pokémon aleatório entre os 151 de Kanto |
+| `homedex config` | Mostra a URL base da API em uso |
+| `homedex help`   | Mostra o texto de uso |
+
+O `roll` é totalmente local: os 151 da Pokédex de Kanto (número, nome, sexo possível) estão compilados dentro do binário, então o sorteio não faz nenhuma chamada de rede e leva dezenas de nanossegundos. Sexo é 50/50 nas espécies que têm os dois, respeitando as exclusivas (Tauros sempre macho, Chansey sempre fêmea) e as sem sexo (Voltorb, Ditto, os lendários). Shiny sai 1 em 20.
+
+A saída da CLI é toda em português — o motivo está no [ADR 0002](docs/adr/0002-idioma-da-interface-da-cli.md).
+
 ## Variáveis de ambiente
 
 ### Backend
@@ -112,6 +132,12 @@ As migrations são aplicadas automaticamente na subida do servidor.
 | `VITE_API_URL` | não         | `http://localhost:8080` | URL base da API. Em produção, a URL do Web Service. |
 
 O frontend lê variáveis de `frontend/.env` (veja `frontend/.env.example`). Variáveis do Vite são embutidas no bundle **em tempo de build** — não coloque segredo nelas.
+
+### CLI
+
+| Variável          | Obrigatória | Padrão                                | Descrição |
+| ----------------- | ----------- | ------------------------------------- | --------- |
+| `HOMEDEX_API_URL` | não         | `https://homedex-server.onrender.com` | URL base da API. Aponte para `http://localhost:8080` para testar contra o backend local. |
 
 ## Deploy
 
