@@ -94,6 +94,16 @@ As migrations são aplicadas automaticamente na subida do servidor.
 | `golangci-lint run ./...`   | linters              |
 | `golangci-lint fmt`         | formatação (gofmt + goimports) |
 
+### Testes de integração
+
+Os testes do resgate diário exercitam transação, bloqueio de linha e concorrência, então precisam de um Postgres real. Eles pulam sozinhos quando `HOMEDEX_TEST_DATABASE_URL` não está definida — por isso o CI, que não sobe banco, ignora esses testes.
+
+```sh
+task test:backend:integration
+```
+
+O comando aponta para `DATABASE_URL` ou, na falta dela, para o Postgres local do Docker Compose. Cada teste cria a própria coleção e a remove no fim, mas **não** aponte para o banco de produção.
+
 ## CLI
 
 Companheiro de terminal do HomeDex, distribuído como módulo Go próprio:
@@ -106,7 +116,7 @@ Ou baixe o binário pronto na [última release](https://github.com/JoaoVictorVM/
 
 | Comando          | Descrição |
 | ---------------- | --------- |
-| `homedex roll`   | Sorteia um Pokémon aleatório entre os 151 de Kanto |
+| `homedex roll`   | Sorteia um Pokémon aleatório entre os 151 de Kanto e oferece adicioná-lo à coleção |
 | `homedex config` | Mostra a URL base da API em uso |
 | `homedex help`   | Mostra o texto de uso |
 
@@ -119,6 +129,21 @@ Essa etapa nunca bloqueia o roll: se o backend estiver fora, lento (timeout de 3
 O resultado é exibido em duas colunas (arte à esquerda, painel à direita) em terminais de **100 colunas ou mais**, e empilhado (arte acima do painel) em terminais mais estreitos. A largura é lida do terminal em tempo de execução; quando não dá para detectar — saída redirecionada, por exemplo — o padrão é 80 colunas. Em seguida a CLI pergunta se você quer adicionar o Pokémon à coleção, aceitando `s`/`sim`/`y`/`yes` e `n`/`nao`/`no` em qualquer caixa, e repergunta em resposta inválida.
 
 A saída da CLI é toda em português — o motivo está no [ADR 0002](docs/adr/0002-idioma-da-interface-da-cli.md).
+
+### Resgate diário
+
+Cada coleção pode resgatar **um** Pokémon por dia UTC, via `POST /collections/{código}/daily-roll`. O limite é do servidor, não da máquina: reinstalar a CLI ou trocar de computador não devolve o resgate.
+
+A operação inteira é uma transação só — a inserção do Pokémon e a marcação do dia consumido são confirmadas juntas ou nenhuma das duas. A linha da coleção é travada com `SELECT ... FOR UPDATE` antes da checagem do dia, então requisições simultâneas para o mesmo código são serializadas e apenas uma passa.
+
+O Pokémon entra no primeiro slot livre da box de menor número, e sempre sob um jogo reservado chamado **HomeDex** (`is_system`), nunca um jogo escolhido pelo usuário. Esse jogo é semeado em toda coleção nova e foi retroativamente criado nas existentes por migration idempotente. Ele não pode ser renomeado, ocultado nem excluído, não aparece no dropdown de adicionar Pokémon nem nas abas do modal de jogos — mas **continua sendo devolvido pela API**, marcado com `isSystem`, para que um Pokémon vindo da CLI exiba "HomeDex" normalmente como jogo no painel de detalhes.
+
+| Situação | Resposta |
+| -------- | -------- |
+| Resgate disponível | `201` com o Pokémon criado, incluindo box e slot |
+| Já resgatou hoje | `409` com `nextAvailableAt` (meia-noite UTC seguinte) |
+| Todas as boxes cheias | `422`, sem consumir o dia |
+| Código inexistente | `404` |
 
 ## Variáveis de ambiente
 
