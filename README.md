@@ -116,6 +116,8 @@ Depois do sorteio, a CLI busca a sprite no backend e a converte em arte ASCII mo
 
 Essa etapa nunca bloqueia o roll: se o backend estiver fora, lento (timeout de 3s) ou sem a sprite, a arte é pulada com uma mensagem e os detalhes continuam aparecendo normalmente. O indicador de carregamento só aparece em terminal interativo, então redirecionar a saída para arquivo produz texto limpo.
 
+O resultado é exibido em duas colunas (arte à esquerda, painel à direita) em terminais de **100 colunas ou mais**, e empilhado (arte acima do painel) em terminais mais estreitos. A largura é lida do terminal em tempo de execução; quando não dá para detectar — saída redirecionada, por exemplo — o padrão é 80 colunas. Em seguida a CLI pergunta se você quer adicionar o Pokémon à coleção, aceitando `s`/`sim`/`y`/`yes` e `n`/`nao`/`no` em qualquer caixa, e repergunta em resposta inválida.
+
 A saída da CLI é toda em português — o motivo está no [ADR 0002](docs/adr/0002-idioma-da-interface-da-cli.md).
 
 ## Variáveis de ambiente
