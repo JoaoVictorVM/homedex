@@ -43,6 +43,14 @@ tasks:
     cmds:
       - go test ./...
 
+  test:backend:integration:
+    desc: Roda os testes de integração do backend contra um Postgres real
+    dir: backend
+    env:
+      HOMEDEX_TEST_DATABASE_URL: '{{.DATABASE_URL | default .LOCAL_DATABASE_URL}}'
+    cmds:
+      - go test ./... -run Integracao -count=1
+
   test:cli:
     desc: Roda os testes da CLI
     dir: cli
