@@ -23,10 +23,10 @@ Ambiente:
 `
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
-func run(args []string, stdout, stderr io.Writer) int {
+func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		return write(stdout, usageText, 0)
 	}
@@ -35,7 +35,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "help", "-h", "--help":
 		return write(stdout, usageText, 0)
 	case "roll":
-		return runRoll(stdout)
+		return runRoll(stdin, stdout)
 	case "config":
 		return write(stdout, config.Resolve()+"\n", 0)
 	default:

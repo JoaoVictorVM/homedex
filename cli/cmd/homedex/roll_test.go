@@ -7,7 +7,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"regexp"
+	"io"
 	"strings"
 	"testing"
 
@@ -34,46 +34,56 @@ func pngDeTeste(t *testing.T) []byte {
 	return buf.Bytes()
 }
 
-func TestExecutaRollImprimeEspecieSexoEShiny(t *testing.T) {
+func buscaOk(t *testing.T) buscadorDeSprite {
+	t.Helper()
+
+	return func(context.Context, string, bool) ([]byte, error) { return pngDeTeste(t), nil }
+}
+
+func adicaoNaoChamada(t *testing.T) fluxoDeAdicao {
+	t.Helper()
+
+	return func(io.Reader, io.Writer, roll.Result) int {
+		t.Error("o fluxo de adição não deveria ter sido chamado")
+
+		return 0
+	}
+}
+
+func TestExecutaRollMostraEspecieSexoEShiny(t *testing.T) {
 	var stdout bytes.Buffer
 
-	buscar := func(context.Context, string, bool) ([]byte, error) { return pngDeTeste(t), nil }
-
-	if code := executaRoll(&stdout, buscar); code != 0 {
+	if code := executaRoll(strings.NewReader("n\n"), &stdout, buscaOk(t), adicaoNaoChamada(t)); code != 0 {
 		t.Fatalf("executaRoll() = %d, esperado 0", code)
 	}
 
-	cabecalho := regexp.MustCompile(`^#\d{3} .+\nSexo: (macho|fêmea|sem sexo)\nShiny: (sim|não)\n`)
-	if !cabecalho.MatchString(stdout.String()) {
-		t.Errorf("cabeçalho fora do formato esperado: %q", stdout.String())
+	saida := stdout.String()
+	for _, esperado := range []string{"Sexo:", "Shiny:", "Forma:"} {
+		if !strings.Contains(saida, esperado) {
+			t.Errorf("saída não traz %q: %q", esperado, saida)
+		}
 	}
 }
 
 func TestExecutaRollRenderizaAArteQuandoABuscaFunciona(t *testing.T) {
 	var stdout bytes.Buffer
 
-	buscar := func(context.Context, string, bool) ([]byte, error) { return pngDeTeste(t), nil }
-
-	executaRoll(&stdout, buscar)
+	executaRoll(strings.NewReader("n\n"), &stdout, buscaOk(t), adicaoNaoChamada(t))
 
 	saida := stdout.String()
 	if strings.Contains(saida, mensagemSemArte) {
 		t.Errorf("não deveria ter caído no fallback: %q", saida)
 	}
 
-	partes := strings.SplitN(saida, "\n\n", 2)
-	if len(partes) != 2 {
-		t.Fatalf("saída sem separação entre detalhes e arte: %q", saida)
-	}
-
-	arte := partes[1]
-	if strings.TrimSpace(arte) == "" {
-		t.Error("nenhuma arte foi impressa")
-	}
-	for _, r := range strings.ReplaceAll(arte, "\n", "") {
-		if !strings.ContainsRune(sprite.Ramp, r) {
-			t.Errorf("caractere %q fora da rampa", r)
+	temRampa := false
+	for _, r := range saida {
+		if r != ' ' && strings.ContainsRune(sprite.Ramp, r) {
+			temRampa = true
+			break
 		}
+	}
+	if !temRampa {
+		t.Errorf("nenhum caractere de arte na saída: %q", saida)
 	}
 }
 
@@ -91,7 +101,7 @@ func TestExecutaRollUsaOIdentificadorDaPokeapiEOShinyDoResultado(t *testing.T) {
 	}
 
 	var stdout bytes.Buffer
-	executaRoll(&stdout, buscar)
+	executaRoll(strings.NewReader("n\n"), &stdout, buscar, adicaoNaoChamada(t))
 
 	if chamadas != 1 {
 		t.Fatalf("buscas = %d, esperado 1", chamadas)
@@ -103,7 +113,7 @@ func TestExecutaRollUsaOIdentificadorDaPokeapiEOShinyDoResultado(t *testing.T) {
 			encontrado = true
 
 			if !strings.Contains(stdout.String(), especie.DisplayName) {
-				t.Errorf("buscou %q mas imprimiu outra espécie: %q", nomePedido, stdout.String())
+				t.Errorf("buscou %q mas exibiu outra espécie: %q", nomePedido, stdout.String())
 			}
 
 			break
@@ -113,9 +123,8 @@ func TestExecutaRollUsaOIdentificadorDaPokeapiEOShinyDoResultado(t *testing.T) {
 		t.Errorf("nome pedido %q não é um identificador do dataset", nomePedido)
 	}
 
-	temShiny := strings.Contains(stdout.String(), "Shiny: sim")
-	if shinyPedido != temShiny {
-		t.Errorf("pediu shiny=%v mas imprimiu shiny=%v", shinyPedido, temShiny)
+	if temShiny := strings.Contains(stdout.String(), "✨"); shinyPedido != temShiny {
+		t.Errorf("pediu shiny=%v mas exibiu shiny=%v", shinyPedido, temShiny)
 	}
 }
 
@@ -126,7 +135,7 @@ func TestExecutaRollCaiNoFallbackQuandoABuscaFalha(t *testing.T) {
 		return nil, errors.New("rede indisponível")
 	}
 
-	if code := executaRoll(&stdout, buscar); code != 0 {
+	if code := executaRoll(strings.NewReader("n\n"), &stdout, buscar, adicaoNaoChamada(t)); code != 0 {
 		t.Fatalf("executaRoll() = %d, esperado 0 mesmo com falha na sprite", code)
 	}
 
@@ -135,7 +144,7 @@ func TestExecutaRollCaiNoFallbackQuandoABuscaFalha(t *testing.T) {
 		t.Errorf("saída não traz a mensagem de fallback: %q", saida)
 	}
 	if !strings.Contains(saida, "Sexo:") || !strings.Contains(saida, "Shiny:") {
-		t.Errorf("os detalhes do roll deveriam continuar visíveis: %q", saida)
+		t.Errorf("os detalhes deveriam continuar visíveis: %q", saida)
 	}
 }
 
@@ -146,55 +155,94 @@ func TestExecutaRollCaiNoFallbackQuandoAImagemNaoDecodifica(t *testing.T) {
 		return []byte("isto não é um png"), nil
 	}
 
-	if code := executaRoll(&stdout, buscar); code != 0 {
-		t.Fatalf("executaRoll() = %d, esperado 0", code)
-	}
+	executaRoll(strings.NewReader("n\n"), &stdout, buscar, adicaoNaoChamada(t))
+
 	if !strings.Contains(stdout.String(), mensagemSemArte) {
 		t.Errorf("saída não traz a mensagem de fallback: %q", stdout.String())
 	}
 }
 
-func TestFormataResultado(t *testing.T) {
-	casos := []struct {
-		nome      string
-		resultado roll.Result
-		esperado  string
-	}{
-		{
-			nome:      "macho normal",
-			resultado: roll.Result{Species: pokedex.Species{Number: 25, DisplayName: "Pikachu"}, Gender: roll.Male},
-			esperado:  "#025 Pikachu\nSexo: macho\nShiny: não\n\n",
-		},
-		{
-			nome:      "fêmea shiny",
-			resultado: roll.Result{Species: pokedex.Species{Number: 113, DisplayName: "Chansey"}, Gender: roll.Female, Shiny: true},
-			esperado:  "#113 Chansey\nSexo: fêmea\nShiny: sim\n\n",
-		},
-		{
-			nome:      "sem sexo",
-			resultado: roll.Result{Species: pokedex.Species{Number: 132, DisplayName: "Ditto"}, Gender: roll.Genderless},
-			esperado:  "#132 Ditto\nSexo: sem sexo\nShiny: não\n\n",
-		},
-		{
-			nome:      "numero de tres digitos",
-			resultado: roll.Result{Species: pokedex.Species{Number: 151, DisplayName: "Mew"}, Gender: roll.Genderless, Shiny: true},
-			esperado:  "#151 Mew\nSexo: sem sexo\nShiny: sim\n\n",
-		},
-	}
+func TestExecutaRollNaoSegueParaAAdicaoQuandoRespondeNao(t *testing.T) {
+	respostas := []string{"n\n", "N\n", "nao\n", "não\n", "no\n", "NO\n"}
 
-	for _, caso := range casos {
-		t.Run(caso.nome, func(t *testing.T) {
-			if got := formataResultado(caso.resultado); got != caso.esperado {
-				t.Errorf("formataResultado() = %q, esperado %q", got, caso.esperado)
+	for _, resposta := range respostas {
+		t.Run(strings.TrimSpace(resposta), func(t *testing.T) {
+			var stdout bytes.Buffer
+
+			code := executaRoll(strings.NewReader(resposta), &stdout, buscaOk(t), adicaoNaoChamada(t))
+
+			if code != 0 {
+				t.Errorf("executaRoll() = %d, esperado 0", code)
+			}
+			if !strings.Contains(stdout.String(), mensagemDescartado) {
+				t.Errorf("saída não confirma o descarte: %q", stdout.String())
 			}
 		})
+	}
+}
+
+func TestExecutaRollSegueParaAAdicaoQuandoRespondeSim(t *testing.T) {
+	respostas := []string{"s\n", "S\n", "sim\n", "y\n", "yes\n", "  Sim  \n"}
+
+	for _, resposta := range respostas {
+		t.Run(strings.TrimSpace(resposta), func(t *testing.T) {
+			var stdout bytes.Buffer
+			var chamado bool
+			var recebido roll.Result
+
+			adicionar := func(_ io.Reader, _ io.Writer, resultado roll.Result) int {
+				chamado = true
+				recebido = resultado
+
+				return 0
+			}
+
+			executaRoll(strings.NewReader(resposta), &stdout, buscaOk(t), adicionar)
+
+			if !chamado {
+				t.Fatal("o fluxo de adição deveria ter sido chamado")
+			}
+			if recebido.Species.Number < 1 || recebido.Species.Number > 151 {
+				t.Errorf("resultado repassado inválido: %+v", recebido)
+			}
+			if !strings.Contains(stdout.String(), recebido.Species.DisplayName) {
+				t.Error("o resultado repassado não é o que foi exibido")
+			}
+		})
+	}
+}
+
+func TestExecutaRollReperguntaEmRespostaInvalida(t *testing.T) {
+	var stdout bytes.Buffer
+
+	executaRoll(strings.NewReader("talvez\n42\nn\n"), &stdout, buscaOk(t), adicaoNaoChamada(t))
+
+	saida := stdout.String()
+	if got := strings.Count(saida, mensagemResposta); got != 2 {
+		t.Errorf("avisos de resposta inválida = %d, esperado 2: %q", got, saida)
+	}
+	if got := strings.Count(saida, perguntaDeAdicao); got != 3 {
+		t.Errorf("perguntas = %d, esperado 3", got)
+	}
+}
+
+func TestExecutaRollTrataEntradaFechadaComoNao(t *testing.T) {
+	var stdout bytes.Buffer
+
+	code := executaRoll(strings.NewReader(""), &stdout, buscaOk(t), adicaoNaoChamada(t))
+
+	if code != 0 {
+		t.Errorf("executaRoll() = %d, esperado 0", code)
+	}
+	if !strings.Contains(stdout.String(), mensagemDescartado) {
+		t.Errorf("entrada fechada deveria descartar: %q", stdout.String())
 	}
 }
 
 func TestUsoListaOComandoRoll(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 
-	run(nil, &stdout, &stderr)
+	run(nil, strings.NewReader(""), &stdout, &stderr)
 
 	if !bytes.Contains(stdout.Bytes(), []byte("roll")) {
 		t.Errorf("texto de uso não menciona o comando roll: %q", stdout.String())

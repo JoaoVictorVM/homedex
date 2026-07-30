@@ -11,7 +11,7 @@ import (
 func TestRunSemArgumentosMostraUso(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 
-	if code := run(nil, &stdout, &stderr); code != 0 {
+	if code := run(nil, strings.NewReader(""), &stdout, &stderr); code != 0 {
 		t.Fatalf("run() = %d, esperado 0", code)
 	}
 	if !strings.Contains(stdout.String(), "Uso:") {
@@ -27,7 +27,7 @@ func TestRunConfigImprimeURLResolvida(t *testing.T) {
 
 	var stdout, stderr bytes.Buffer
 
-	if code := run([]string{"config"}, &stdout, &stderr); code != 0 {
+	if code := run([]string{"config"}, strings.NewReader(""), &stdout, &stderr); code != 0 {
 		t.Fatalf("run() = %d, esperado 0", code)
 	}
 	if got := strings.TrimSpace(stdout.String()); got != "http://localhost:8080" {
@@ -38,7 +38,7 @@ func TestRunConfigImprimeURLResolvida(t *testing.T) {
 func TestRunComandoDesconhecido(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 
-	if code := run([]string{"inexistente"}, &stdout, &stderr); code != 2 {
+	if code := run([]string{"inexistente"}, strings.NewReader(""), &stdout, &stderr); code != 2 {
 		t.Fatalf("run() = %d, esperado 2", code)
 	}
 	if !strings.Contains(stderr.String(), "comando desconhecido") {
