@@ -5,6 +5,7 @@
 node_modules/
 backend/bin/
 /bin/
+cli/dist/
 *.exe
 *.test
 coverage.out
