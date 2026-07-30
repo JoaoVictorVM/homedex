@@ -2,7 +2,10 @@ package pokeapi
 
 import "sync"
 
-const defaultCacheSize = 5000
+const (
+	defaultCacheSize = 5000
+	imageCacheSize   = 512
+)
 
 type cache[V any] struct {
 	mu      sync.RWMutex
