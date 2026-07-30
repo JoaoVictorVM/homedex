@@ -5,12 +5,25 @@ import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { GameRow } from './GameRow.tsx'
 import type { Game } from '../../game.schema.ts'
 
-const oficial: Game = { id: 1, name: 'Red', isOfficial: true, visible: true }
-const oculto: Game = { id: 2, name: 'Blue', isOfficial: true, visible: false }
+const oficial: Game = {
+  id: 1,
+  name: 'Red',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
+const oculto: Game = {
+  id: 2,
+  name: 'Blue',
+  isOfficial: true,
+  isSystem: false,
+  visible: false,
+}
 const hackrom: Game = {
   id: 3,
   name: 'Radical Red',
   isOfficial: false,
+  isSystem: false,
   visible: true,
 }
 

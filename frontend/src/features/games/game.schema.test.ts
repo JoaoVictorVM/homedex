@@ -5,6 +5,7 @@ const oficial = {
   id: 394,
   name: 'FireRed',
   isOfficial: true,
+  isSystem: false,
   visible: true,
 }
 
@@ -12,6 +13,7 @@ const hackrom = {
   id: 471,
   name: 'Radical Red',
   isOfficial: false,
+  isSystem: false,
   visible: false,
 }
 

@@ -4,9 +4,27 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { AddPokemonModal } from './AddPokemonModal.tsx'
 
-const firered = { id: 42, name: 'FireRed', isOfficial: true, visible: true }
-const leafgreen = { id: 43, name: 'LeafGreen', isOfficial: true, visible: true }
-const oculto = { id: 44, name: 'Emerald', isOfficial: true, visible: false }
+const firered = {
+  id: 42,
+  name: 'FireRed',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
+const leafgreen = {
+  id: 43,
+  name: 'LeafGreen',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
+const oculto = {
+  id: 44,
+  name: 'Emerald',
+  isOfficial: true,
+  isSystem: false,
+  visible: false,
+}
 
 const criado = {
   id: 1,
