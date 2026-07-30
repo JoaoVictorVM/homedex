@@ -17,7 +17,13 @@ const rattata = {
   sprite: 'https://sprites/shiny/10091.png',
 }
 
-const firered = { id: 42, name: 'FireRed', isOfficial: true, visible: true }
+const firered = {
+  id: 42,
+  name: 'FireRed',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
 
 function mockApi(): void {
   vi.stubGlobal(
@@ -68,6 +74,40 @@ describe('PokemonDetail', () => {
 
     await waitFor(() => {
       expect(screen.getByText('FireRed')).toBeInTheDocument()
+    })
+  })
+
+  it('exibe HomeDex como jogo de um pokémon vindo da cli', async () => {
+    const homedex = {
+      id: 99,
+      name: 'HomeDex',
+      isOfficial: false,
+      isSystem: true,
+      visible: false,
+    }
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => {
+        const body = url.includes('/games')
+          ? [firered, homedex]
+          : [{ ...rattata, gameId: 99 }]
+
+        return Promise.resolve(
+          new Response(JSON.stringify(body), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        )
+      }),
+    )
+
+    renderWithProviders(
+      <PokemonDetail code="A7K9F2QX" boxNumber={1} slot={3} />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('HomeDex')).toBeInTheDocument()
     })
   })
 

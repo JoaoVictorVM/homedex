@@ -5,9 +5,15 @@ import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { GamesModal } from './GamesModal.tsx'
 
 const games = [
-  { id: 1, name: 'Red', isOfficial: true, visible: true },
-  { id: 2, name: 'Blue', isOfficial: true, visible: false },
-  { id: 3, name: 'Radical Red', isOfficial: false, visible: true },
+  { id: 1, name: 'Red', isOfficial: true, isSystem: false, visible: true },
+  { id: 2, name: 'Blue', isOfficial: true, isSystem: false, visible: false },
+  {
+    id: 3,
+    name: 'Radical Red',
+    isOfficial: false,
+    isSystem: false,
+    visible: true,
+  },
 ]
 
 function mockGames(list: unknown = games): void {
@@ -38,6 +44,30 @@ describe('GamesModal', () => {
     })
     expect(screen.getByText('Blue')).toBeInTheDocument()
     expect(screen.queryByText('Radical Red')).not.toBeInTheDocument()
+  })
+
+  it('não lista o jogo do sistema em nenhuma das abas', async () => {
+    mockGames([
+      ...games,
+      {
+        id: 4,
+        name: 'HomeDex',
+        isOfficial: false,
+        isSystem: true,
+        visible: false,
+      },
+    ])
+    renderWithProviders(<GamesModal code="A7K9F2QX" onClose={vi.fn()} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Red')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('HomeDex')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('tab', { name: /hackrom/i }))
+
+    expect(screen.getByText('Radical Red')).toBeInTheDocument()
+    expect(screen.queryByText('HomeDex')).not.toBeInTheDocument()
   })
 
   it('troca para a aba de hackroms', async () => {

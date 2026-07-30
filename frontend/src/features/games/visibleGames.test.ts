@@ -7,6 +7,7 @@ function game(overrides: Partial<Game> = {}): Game {
     id: 1,
     name: 'FireRed',
     isOfficial: true,
+    isSystem: false,
     visible: true,
     ...overrides,
   }
@@ -34,5 +35,14 @@ describe('visibleGames', () => {
 
   it('devolve vazio quando nada está visível', () => {
     expect(visibleGames([game({ visible: false })])).toEqual([])
+  })
+
+  it('esconde o jogo do sistema mesmo quando visível', () => {
+    const result = visibleGames([
+      game({ id: 1, name: 'FireRed' }),
+      game({ id: 2, name: 'HomeDex', isSystem: true, visible: true }),
+    ])
+
+    expect(result.map((g) => g.name)).toEqual(['FireRed'])
   })
 })
