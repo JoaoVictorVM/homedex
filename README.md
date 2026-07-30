@@ -116,38 +116,32 @@ A aplicação usa dois serviços no Render e um banco no Neon, todos no plano gr
 
 O banco fica no Neon porque o PostgreSQL gratuito do Render expira após 90 dias — veja [ADR 0001](docs/adr/0001-banco-de-dados-no-neon.md).
 
+Os dois serviços do Render são declarados em [`render.yaml`](render.yaml), um Blueprint versionado. **Configuração de infraestrutura se muda editando esse arquivo, não pelo painel do Render** — o painel é usado só para o valor de `DATABASE_URL`, que é segredo e por isso está declarado como `sync: false`.
+
 ### 1. Banco de dados (Neon)
 
-Crie um projeto no [Neon](https://neon.com) **na mesma região do web service do Render** (Render Oregon → `aws-us-west-2`, Render Frankfurt → `aws-eu-central-1`). Região diferente adiciona dezenas de milissegundos por consulta.
+O banco **não** entra no Blueprint: ele é um projeto do Neon, provisionado uma vez à mão.
+
+Crie um projeto no [Neon](https://neon.com) **na mesma região do web service do Render** — o `render.yaml` fixa `region: oregon` no `homedex-server`, então use `aws-us-west-2`. Região diferente adiciona dezenas de milissegundos por consulta. (O Static Site não tem região: o Render serve por CDN global.)
 
 Copie a connection string **direta** (a que *não* tem `-pooler` no host). O endpoint com pooler roda PgBouncer em modo transação com `max_prepared_statements=0`, incompatível com o cache de prepared statements do pgx.
 
 As tabelas são criadas sozinhas: o backend roda as migrations ao subir.
 
-### 2. Backend (Web Service)
+### 2. Serviços do Render (Blueprint)
 
-- **Runtime**: Docker · **Root Directory**: `backend` · **Dockerfile Path**: `Dockerfile`
-- **Health Check Path**: `/health`
-- Variáveis de ambiente:
+No painel do Render, crie um **Blueprint** apontando para este repositório. O Render lê o `render.yaml` e provisiona os dois serviços:
 
-| Variável          | Valor |
-| ----------------- | ----- |
-| `DATABASE_URL`    | Connection string direta do Neon (passo 1) |
-| `FRONTEND_ORIGIN` | URL do Static Site (ex: `https://homedex-web.onrender.com`) |
-| `TRUST_PROXY`     | `true` |
+| Serviço | Configuração declarada |
+| ------- | ---------------------- |
+| `homedex-server` | Docker a partir de `backend/Dockerfile`, health check em `/health`, `FRONTEND_ORIGIN` e `TRUST_PROXY=true` |
+| `homedex-web` | Static Site, build `pnpm install --frozen-lockfile && pnpm build`, publish `dist`, `VITE_API_URL` |
 
-`PORT` é injetada pelo Render — não defina manualmente.
+Na sincronização, o Render pede o valor de `DATABASE_URL` — cole a connection string direta do Neon (passo 1). É a única variável definida à mão.
 
-### 3. Frontend (Static Site)
+`PORT` é injetada pelo Render — não aparece no Blueprint nem deve ser definida.
 
-- **Root Directory**: `frontend`
-- **Build Command**: `pnpm install --frozen-lockfile && pnpm build`
-- **Publish Directory**: `dist`
-- Variável de ambiente: `VITE_API_URL` = URL do Web Service (ex: `https://homedex-server.onrender.com`)
-
-### Ordem e dependência circular
-
-O backend precisa da URL do frontend (CORS) e o frontend precisa da URL do backend. Como as URLs do Render são previsíveis (`https://<nome-do-serviço>.onrender.com`), defina as duas já na criação usando os nomes escolhidos. Se preferir criar primeiro e ajustar depois, atualize `FRONTEND_ORIGIN` no backend e refaça o deploy do frontend com o `VITE_API_URL` correto — lembrando que essa variável é aplicada **no build**.
+`FRONTEND_ORIGIN` e `VITE_API_URL` estão fixadas no `render.yaml` com as URLs previsíveis do Render (`https://<nome-do-serviço>.onrender.com`), o que resolve a dependência circular entre os dois serviços (o backend precisa da URL do front para o CORS, o front precisa da URL do back). Se os nomes dos serviços mudarem, as duas URLs mudam junto no mesmo arquivo — e o frontend precisa de um novo deploy, porque `VITE_API_URL` é aplicada **no build**.
 
 ### Observações do plano gratuito
 
