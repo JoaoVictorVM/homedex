@@ -110,7 +110,11 @@ Ou baixe o binário pronto na [última release](https://github.com/JoaoVictorVM/
 | `homedex config` | Mostra a URL base da API em uso |
 | `homedex help`   | Mostra o texto de uso |
 
-O `roll` é totalmente local: os 151 da Pokédex de Kanto (número, nome, sexo possível) estão compilados dentro do binário, então o sorteio não faz nenhuma chamada de rede e leva dezenas de nanossegundos. Sexo é 50/50 nas espécies que têm os dois, respeitando as exclusivas (Tauros sempre macho, Chansey sempre fêmea) e as sem sexo (Voltorb, Ditto, os lendários). Shiny sai 1 em 20.
+O sorteio em si é totalmente local: os 151 da Pokédex de Kanto (número, nome, sexo possível) estão compilados dentro do binário, então ele não faz nenhuma chamada de rede e leva dezenas de nanossegundos. Sexo é 50/50 nas espécies que têm os dois, respeitando as exclusivas (Tauros sempre macho, Chansey sempre fêmea) e as sem sexo (Voltorb, Ditto, os lendários). Shiny sai 1 em 20.
+
+Depois do sorteio, a CLI busca a sprite no backend e a converte em arte ASCII monocromática, usando a rampa ` .:-=+*#%@` e cabendo em 80 colunas. A sprite shiny é usada quando o roll é shiny. **A CLI nunca chama a PokéAPI direto** — ela pede os bytes ao endpoint `GET /sprite/image` do backend, que faz o proxy e mantém o cache.
+
+Essa etapa nunca bloqueia o roll: se o backend estiver fora, lento (timeout de 3s) ou sem a sprite, a arte é pulada com uma mensagem e os detalhes continuam aparecendo normalmente. O indicador de carregamento só aparece em terminal interativo, então redirecionar a saída para arquivo produz texto limpo.
 
 A saída da CLI é toda em português — o motivo está no [ADR 0002](docs/adr/0002-idioma-da-interface-da-cli.md).
 
