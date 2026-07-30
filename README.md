@@ -17,9 +17,18 @@ Gerenciador de boxes de Pokémon no estilo Fire Red, para quem joga em emulador/
 homedex/
   frontend/   # app React (Vite)
   backend/    # API Go
+  cli/        # CLI Go (módulo próprio)
 ```
 
 Frontend e backend são aplicações independentes que se comunicam apenas por HTTP.
+
+### Workspace Go
+
+O `go.work` na raiz declara `./backend` e `./cli` como módulos do mesmo workspace. Com isso, código Go compartilhado entre os dois é resolvido direto do fonte nos comandos locais — editar um pacote do backend usado pela CLI vale na hora, sem publicar nem tagear versão, e sem precisar de um `require` no `go.mod` da CLI.
+
+`go.work` e `go.work.sum` são versionados, então todo clone tem a mesma resolução local sem rodar `go work init`.
+
+O workspace é uma conveniência **só de desenvolvimento local**. Os builds de produção não passam por ele: a imagem Docker do backend e o Blueprint do Render usam `backend/` como contexto, e a CLI é compilada pelo GoReleaser a partir de `cli/` — em nenhum dos casos o `go.work` está presente. Cada módulo continua compilando isolado (`GOWORK=off go build ./...`).
 
 ## Pré-requisitos
 
