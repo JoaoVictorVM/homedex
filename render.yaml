@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: homedex-server
+    runtime: docker
+    plan: free
+    region: oregon
+    rootDir: backend
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_ORIGIN
+        value: https://homedex-web.onrender.com
+      - key: TRUST_PROXY
+        value: "true"
+
+  - type: web
+    name: homedex-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://homedex-server.onrender.com
