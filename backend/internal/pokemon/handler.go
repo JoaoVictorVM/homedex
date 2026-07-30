@@ -79,6 +79,7 @@ func (h *Handler) Register(r chi.Router) {
 
 func (h *Handler) RegisterSprite(r chi.Router) {
 	r.Get("/", h.sprite)
+	r.Get("/image", h.spriteImage)
 }
 
 func (h *Handler) RegisterForms(r chi.Router) {
@@ -128,6 +129,39 @@ func (h *Handler) sprite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpjson.Write(w, http.StatusOK, map[string]string{"sprite": url})
+}
+
+func (h *Handler) spriteImage(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		httpjson.Error(w, http.StatusBadRequest, "informe o nome do pokémon")
+		return
+	}
+
+	form := r.URL.Query().Get("form")
+	shiny := r.URL.Query().Get("shiny") == "true"
+
+	image, err := h.service.ResolveSpriteImage(r.Context(), name, form, shiny)
+	if err != nil {
+		switch {
+		case errors.Is(err, pokeapi.ErrNotFound), errors.Is(err, pokeapi.ErrInvalidName):
+			httpjson.Error(w, http.StatusNotFound, "pokémon não encontrado na PokéAPI")
+		case errors.Is(err, pokeapi.ErrNoSprite):
+			httpjson.Error(w, http.StatusNotFound, "sprite indisponível para o pokémon")
+		default:
+			slog.Error("resolver imagem da sprite", "erro", err)
+			httpjson.Error(w, http.StatusInternalServerError, "não foi possível buscar a sprite")
+		}
+
+		return
+	}
+
+	w.Header().Set("Content-Type", http.DetectContentType(image))
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+
+	if _, err := w.Write(image); err != nil {
+		slog.Warn("escrever bytes da sprite", "erro", err)
+	}
 }
 
 func (h *Handler) move(w http.ResponseWriter, r *http.Request) {
