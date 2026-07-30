@@ -168,7 +168,26 @@ O fluxo é:
 1. Commits em `main` disparam o workflow `.github/workflows/release-please.yml`.
 2. O release-please abre (ou atualiza) um pull request de release com o `CHANGELOG.md` e a versão atualizados.
 3. Ao mergear esse pull request, a tag `vX.Y.Z` é criada.
+4. A tag dispara `.github/workflows/cli-release.yml`, que roda o [GoReleaser](https://goreleaser.com) e anexa os binários da CLI à release.
 
 **Nunca edite `CHANGELOG.md`, `version.txt` ou `.release-please-manifest.json` à mão** — os três são gerados pela automação.
 
 O workflow usa o segredo `RELEASE_PLEASE_TOKEN` (Personal Access Token com escrita em `contents` e `pull requests`), caindo no `GITHUB_TOKEN` padrão quando ele não existe. O motivo está no [ADR 0003](docs/adr/0003-token-do-release-please.md): tags criadas com o `GITHUB_TOKEN` não disparam outros workflows, o que impediria a publicação automática dos binários da CLI.
+
+### Binários da CLI
+
+O `cli/.goreleaser.yml` compila a CLI para `linux/amd64`, `darwin/amd64`, `darwin/arm64` e `windows/amd64`, empacota em `.tar.gz` (`.zip` no Windows) e publica os arquivos mais o `checksums.txt` como assets da release.
+
+A publicação é tudo-ou-nada: as quatro plataformas são compiladas num único job, antes de qualquer upload. Se uma falhar, o workflow falha e **nenhum** binário é publicado.
+
+Como o release-please já criou a release com o changelog, o GoReleaser roda com `mode: keep-existing` — ele anexa os binários sem sobrescrever as notas. O `replace_existing_artifacts` permite reempurrar a mesma tag para refazer os assets.
+
+Para validar mudanças na configuração sem publicar nada:
+
+```sh
+cd cli
+goreleaser check
+goreleaser release --snapshot --clean
+```
+
+O snapshot gera tudo em `cli/dist/` (ignorado pelo git). O build roda com `GOWORK=off`, então a CLI é compilada exatamente como fora do workspace.
