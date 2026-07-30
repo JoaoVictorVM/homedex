@@ -14,6 +14,7 @@ Uso:
   homedex <comando>
 
 Comandos:
+  roll     Sorteia um Pokémon aleatório entre os 151 de Kanto
   config   Mostra a URL base da API HomeDex em uso
   help     Mostra esta mensagem
 
@@ -33,6 +34,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch args[0] {
 	case "help", "-h", "--help":
 		return write(stdout, usageText, 0)
+	case "roll":
+		return runRoll(stdout)
 	case "config":
 		return write(stdout, config.Resolve()+"\n", 0)
 	default:
