@@ -11,10 +11,11 @@ const maxCodeAttempts = 5
 type Service struct {
 	repo          *Repository
 	officialGames []string
+	systemGame    string
 }
 
-func NewService(repo *Repository, officialGames []string) *Service {
-	return &Service{repo: repo, officialGames: officialGames}
+func NewService(repo *Repository, officialGames []string, systemGame string) *Service {
+	return &Service{repo: repo, officialGames: officialGames, systemGame: systemGame}
 }
 
 func (s *Service) Create(ctx context.Context) (Collection, error) {
@@ -24,7 +25,7 @@ func (s *Service) Create(ctx context.Context) (Collection, error) {
 			return Collection{}, err
 		}
 
-		created, err := s.repo.Insert(ctx, code, s.officialGames)
+		created, err := s.repo.Insert(ctx, code, s.officialGames, s.systemGame)
 		if err == nil {
 			return created, nil
 		}

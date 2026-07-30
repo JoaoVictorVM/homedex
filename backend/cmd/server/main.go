@@ -65,6 +65,7 @@ func run() error {
 	collectionService := collection.NewService(
 		collection.NewRepository(pool),
 		games.OfficialNames(),
+		games.SystemGameName,
 	)
 	gamesService := games.NewService(games.NewRepository(pool), collectionService)
 	pokeapiClient := pokeapi.New(pokeapi.Options{})
