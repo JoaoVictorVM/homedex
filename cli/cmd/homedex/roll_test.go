@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -43,7 +44,7 @@ func buscaOk(t *testing.T) buscadorDeSprite {
 func adicaoNaoChamada(t *testing.T) fluxoDeAdicao {
 	t.Helper()
 
-	return func(io.Reader, io.Writer, roll.Result) int {
+	return func(*bufio.Scanner, io.Writer, roll.Result) int {
 		t.Error("o fluxo de adição não deveria ter sido chamado")
 
 		return 0
@@ -190,7 +191,7 @@ func TestExecutaRollSegueParaAAdicaoQuandoRespondeSim(t *testing.T) {
 			var chamado bool
 			var recebido roll.Result
 
-			adicionar := func(_ io.Reader, _ io.Writer, resultado roll.Result) int {
+			adicionar := func(_ *bufio.Scanner, _ io.Writer, resultado roll.Result) int {
 				chamado = true
 				recebido = resultado
 
@@ -209,6 +210,25 @@ func TestExecutaRollSegueParaAAdicaoQuandoRespondeSim(t *testing.T) {
 				t.Error("o resultado repassado não é o que foi exibido")
 			}
 		})
+	}
+}
+
+func TestExecutaRollRepassaORestanteDaEntradaParaAAdicao(t *testing.T) {
+	var stdout bytes.Buffer
+	var lido string
+
+	adicionar := func(leitor *bufio.Scanner, _ io.Writer, _ roll.Result) int {
+		if leitor.Scan() {
+			lido = leitor.Text()
+		}
+
+		return 0
+	}
+
+	executaRoll(strings.NewReader("s\nA7K9F2QX\n"), &stdout, buscaOk(t), adicionar)
+
+	if lido != "A7K9F2QX" {
+		t.Errorf("linha lida pelo fluxo de adição = %q, esperado %q", lido, "A7K9F2QX")
 	}
 }
 

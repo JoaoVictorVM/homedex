@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/JoaoVictorVM/homedex/cli/internal/collection"
 	"github.com/JoaoVictorVM/homedex/cli/internal/display"
 	"github.com/JoaoVictorVM/homedex/cli/internal/roll"
 	"github.com/JoaoVictorVM/homedex/cli/internal/sprite"
@@ -19,19 +20,18 @@ const (
 	perguntaDeAdicao   = "Adicionar este Pokémon à sua coleção? (s/n) "
 	mensagemResposta   = "Responda com s (sim) ou n (não)."
 	mensagemDescartado = "Tudo bem, nada foi adicionado."
-
-	mensagemAdicaoIndisponivel = "Adicionar à coleção ainda não está disponível nesta versão."
 )
 
 type buscadorDeSprite func(ctx context.Context, species string, shiny bool) ([]byte, error)
 
-type fluxoDeAdicao func(stdin io.Reader, stdout io.Writer, resultado roll.Result) int
+type fluxoDeAdicao func(leitor *bufio.Scanner, stdout io.Writer, resultado roll.Result) int
 
 func runRoll(stdin io.Reader, stdout io.Writer) int {
-	return executaRoll(stdin, stdout, sprite.Fetch, adicionaAColecao)
+	return executaRoll(stdin, stdout, sprite.Fetch, collection.Redeem)
 }
 
 func executaRoll(stdin io.Reader, stdout io.Writer, buscar buscadorDeSprite, adicionar fluxoDeAdicao) int {
+	leitor := bufio.NewScanner(stdin)
 	resultado := roll.Roll()
 	largura := display.LarguraDoTerminal()
 
@@ -59,11 +59,11 @@ func executaRoll(stdin io.Reader, stdout io.Writer, buscar buscadorDeSprite, adi
 		}
 	}
 
-	if !perguntaSeAdiciona(stdin, stdout) {
+	if !perguntaSeAdiciona(leitor, stdout) {
 		return write(stdout, mensagemDescartado+"\n", 0)
 	}
 
-	return adicionar(stdin, stdout, resultado)
+	return adicionar(leitor, stdout, resultado)
 }
 
 func arteDaSprite(ctx context.Context, buscar buscadorDeSprite, resultado roll.Result, largura int) (string, string) {
@@ -80,9 +80,7 @@ func arteDaSprite(ctx context.Context, buscar buscadorDeSprite, resultado roll.R
 	return arte, ""
 }
 
-func perguntaSeAdiciona(stdin io.Reader, stdout io.Writer) bool {
-	leitor := bufio.NewScanner(stdin)
-
+func perguntaSeAdiciona(leitor *bufio.Scanner, stdout io.Writer) bool {
 	for {
 		if code := write(stdout, "\n"+perguntaDeAdicao, 0); code != 0 {
 			return false
@@ -107,10 +105,6 @@ func perguntaSeAdiciona(stdin io.Reader, stdout io.Writer) bool {
 			return false
 		}
 	}
-}
-
-func adicionaAColecao(_ io.Reader, stdout io.Writer, _ roll.Result) int {
-	return write(stdout, mensagemAdicaoIndisponivel+"\n", 0)
 }
 
 func ehTerminal(w io.Writer) bool {
