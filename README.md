@@ -22,6 +22,14 @@ homedex/
 
 Frontend e backend são aplicações independentes que se comunicam apenas por HTTP.
 
+### Documentação de arquitetura
+
+| Onde | O que tem |
+| ---- | --------- |
+| [`docs/c4/context.md`](docs/c4/context.md) | Diagrama de contexto: atores e sistemas externos (PokéAPI, Render, Neon) |
+| [`docs/c4/container.md`](docs/c4/container.md) | Diagrama de containers: app web, API, CLI e banco, com os protocolos entre eles |
+| [`docs/adr/`](docs/adr/) | Decisões técnicas registradas, uma por arquivo, com contexto, alternativas e consequências |
+
 ### Workspace Go
 
 O `go.work` na raiz declara `./backend` e `./cli` como módulos do mesmo workspace. Com isso, código Go compartilhado entre os dois é resolvido direto do fonte nos comandos locais — editar um pacote do backend usado pela CLI vale na hora, sem publicar nem tagear versão, e sem precisar de um `require` no `go.mod` da CLI.
