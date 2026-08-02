@@ -273,3 +273,11 @@ goreleaser release --snapshot --clean
 ```
 
 O snapshot gera tudo em `cli/dist/` (ignorado pelo git). O build roda com `GOWORK=off`, então a CLI é compilada exatamente como fora do workspace.
+
+## Contribuindo
+
+Issues e pull requests são bem-vindos — o guia está em [CONTRIBUTING.md](CONTRIBUTING.md), a conduta esperada em [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) e o canal privado para relatar vulnerabilidades em [SECURITY.md](SECURITY.md).
+
+## Licença
+
+[MIT](LICENSE) © João Victor Ventura Martins
