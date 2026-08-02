@@ -2,7 +2,10 @@
 .env.local
 .env.*.local
 
+node_modules/
 backend/bin/
+/bin/
+cli/dist/
 *.exe
 *.test
 coverage.out

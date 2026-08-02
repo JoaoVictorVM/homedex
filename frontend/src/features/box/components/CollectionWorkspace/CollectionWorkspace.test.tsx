@@ -4,7 +4,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { CollectionWorkspace } from './CollectionWorkspace.tsx'
 
-const firered = { id: 42, name: 'FireRed', isOfficial: true, visible: true }
+const firered = {
+  id: 42,
+  name: 'FireRed',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
 
 const bulbasaur = {
   id: 1,

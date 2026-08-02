@@ -20,6 +20,7 @@ type collections interface {
 type pokedex interface {
 	Pokemon(ctx context.Context, name string) (pokeapi.Pokemon, error)
 	Sprite(ctx context.Context, name string, form string, shiny bool) (string, error)
+	SpriteImage(ctx context.Context, name string, form string, shiny bool) ([]byte, error)
 	Forms(ctx context.Context, name string) ([]string, error)
 }
 
@@ -47,6 +48,10 @@ func (s *Service) ResolveSprite(ctx context.Context, name string, form string, s
 	}
 
 	return url, nil
+}
+
+func (s *Service) ResolveSpriteImage(ctx context.Context, name string, form string, shiny bool) ([]byte, error) {
+	return s.pokedex.SpriteImage(ctx, name, form, shiny)
 }
 
 func (s *Service) Create(ctx context.Context, rawCode string, novo NewPokemon) (Pokemon, error) {

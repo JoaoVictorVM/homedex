@@ -33,7 +33,7 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
-func (r *Repository) Insert(ctx context.Context, code string, officialGames []string) (Collection, error) {
+func (r *Repository) Insert(ctx context.Context, code string, officialGames []string, systemGame string) (Collection, error) {
 	var created Collection
 
 	err := database.InTx(ctx, r.pool, func(tx pgx.Tx) error {
@@ -56,6 +56,14 @@ func (r *Repository) Insert(ctx context.Context, code string, officialGames []st
 			created.ID, officialGames,
 		); err != nil {
 			return fmt.Errorf("inserir jogos oficiais: %w", err)
+		}
+
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO games (collection_id, name, is_official, is_system, visible)
+			 VALUES ($1, $2, false, true, false)`,
+			created.ID, systemGame,
+		); err != nil {
+			return fmt.Errorf("inserir jogo do sistema: %w", err)
 		}
 
 		return nil

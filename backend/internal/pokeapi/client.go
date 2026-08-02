@@ -33,6 +33,7 @@ type Client struct {
 	pokemons  *cache[Pokemon]
 	varieties *cache[string]
 	forms     *cache[[]string]
+	images    *cache[[]byte]
 }
 
 func New(opts Options) *Client {
@@ -57,6 +58,7 @@ func New(opts Options) *Client {
 		pokemons:  newCache[Pokemon](cacheSize),
 		varieties: newCache[string](cacheSize),
 		forms:     newCache[[]string](cacheSize),
+		images:    newCache[[]byte](imageCacheSize),
 	}
 }
 

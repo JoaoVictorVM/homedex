@@ -13,7 +13,13 @@ function mockApi(erro?: {
       return Promise.resolve(
         erro === undefined
           ? json(
-              { id: 9, name: 'Radical Red', isOfficial: false, visible: true },
+              {
+                id: 9,
+                name: 'Radical Red',
+                isOfficial: false,
+                isSystem: false,
+                visible: true,
+              },
               201,
             )
           : json({ error: erro.message }, erro.status),

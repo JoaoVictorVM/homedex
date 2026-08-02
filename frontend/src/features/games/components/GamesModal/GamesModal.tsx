@@ -19,8 +19,9 @@ export function GamesModal({ code, onClose }: GamesModalProps): JSX.Element {
   const games = useGames(code)
   const [tab, setTab] = useState<Tab>('official')
 
-  const official = (games.data ?? []).filter((game) => game.isOfficial)
-  const hackroms = (games.data ?? []).filter((game) => !game.isOfficial)
+  const manageable = (games.data ?? []).filter((game) => !game.isSystem)
+  const official = manageable.filter((game) => game.isOfficial)
+  const hackroms = manageable.filter((game) => !game.isOfficial)
 
   return (
     <Modal title={t('games.title')} onClose={onClose}>

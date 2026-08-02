@@ -5,8 +5,20 @@ import { renderWithProviders } from '../../../../test/renderWithProviders.tsx'
 import { EditPokemonModal } from './EditPokemonModal.tsx'
 import type { Pokemon } from '../../pokemon.schema.ts'
 
-const firered = { id: 42, name: 'FireRed', isOfficial: true, visible: true }
-const leafgreen = { id: 43, name: 'LeafGreen', isOfficial: true, visible: true }
+const firered = {
+  id: 42,
+  name: 'FireRed',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
+const leafgreen = {
+  id: 43,
+  name: 'LeafGreen',
+  isOfficial: true,
+  isSystem: false,
+  visible: true,
+}
 
 const rattata: Pokemon = {
   id: 7,
