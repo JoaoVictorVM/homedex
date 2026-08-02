@@ -130,6 +130,23 @@ O resultado é exibido em duas colunas (arte à esquerda, painel à direita) em 
 
 A saída da CLI é toda em português — o motivo está no [ADR 0002](docs/adr/0002-idioma-da-interface-da-cli.md).
 
+### Adicionar à coleção
+
+Respondendo `s`, a CLI pede o código da coleção e faz **uma** requisição ao [resgate diário](#resgate-diário). O código é aceito como texto livre — com ou sem o separador (`A7K9-F2QX`), em qualquer caixa — porque quem valida o formato é o backend, não a CLI. Enter vazio cancela sem chamar o servidor.
+
+Não existe escolha de jogo: o corpo enviado tem só `species`, `gender` e `shiny`, e o backend associa o Pokémon ao jogo reservado **HomeDex**. Os atributos enviados são exatamente os do sorteio exibido.
+
+| Situação | Mensagem | Saída |
+| -------- | -------- | ----- |
+| Resgatado | `Pikachu foi adicionado à Box 1, slot 4!` | `0` |
+| Já resgatou hoje | Horário UTC do próximo resgate, nada é adicionado | `1` |
+| Coleção cheia | Aviso para liberar um slot no app | `1` |
+| Código não encontrado | Repergunta o código, até 3 tentativas | `1` |
+| Backend fora do ar ou lento (timeout de 5s) | `Não foi possível falar com o HomeDex.` | `1` |
+| Cancelado com enter vazio | `Tudo bem, nada foi adicionado.` | `0` |
+
+Os slots são contados de 1 a 30 na mensagem, enquanto a API os numera de 0 a 29.
+
 ### Resgate diário
 
 Cada coleção pode resgatar **um** Pokémon por dia UTC, via `POST /collections/{código}/daily-roll`. O limite é do servidor, não da máquina: reinstalar a CLI ou trocar de computador não devolve o resgate.
